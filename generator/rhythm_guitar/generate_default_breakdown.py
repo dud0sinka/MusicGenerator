@@ -36,13 +36,12 @@ root_notes_generated = []  # amount of generated 0's is affecting the amount of 
 recent_note = 0  # keep track of the last note played
 recent_duration = 0  # keep track of the duration of the lat note played
 notes_generated = []  # all notes generated
+consecutive_16ths = 0  # this variable is used to prevent the generation of singular 16th notes
 
 
 # TODO: change the breakdown the second time it repeats, spice-up parts (octaves, runs, chords etc.)
 # TODO: different types of breakdowns (this one is default / melodic)
-# TODO: rests after a lot of notes have played
-# TODO: melodic breakdown no bass on high notes
-# TODO: choose closest notes with higher chance\
+# TODO: choose closest notes with higher chance
 # TODO: dead notes
 
 def choose_scale():
@@ -61,7 +60,7 @@ def fill_scale(current_note, scale):  # fill the scale with notes
 
 
 def generate_rhythm_guitar(file, number_of_bars):
-    global recent_note, recent_duration, ROOT_NOTE, current_scale
+    global recent_note, recent_duration, ROOT_NOTE, current_scale, consecutive_16ths
 
     ROOT_NOTE = random.randint(ROOT_NOTE_LOWEST, ROOT_NOTE_HIGHEST)
     print(ROOT_NOTE)
@@ -77,25 +76,44 @@ def generate_rhythm_guitar(file, number_of_bars):
         position = 0
         while position < 4:
             rest_probability = random.random()  # rests
-            if rest_probability < 0.05 * len(root_notes_generated) and root_notes_generated[
+            if rest_probability < 0.05 * len(root_notes_generated) and root_notes_generated[  # half note rest
                 -1] == ROOT_NOTE and position % 1 == 0 and \
+                    recent_note == ROOT_NOTE and recent_duration > 0.5:
+                position += 2
+                root_notes_generated.clear()
+                continue
+            if rest_probability < 0.1 * len(root_notes_generated) and root_notes_generated[  # quarter note rest
+                -1] == ROOT_NOTE and position % 0.5 == 0 and \
                     recent_note == ROOT_NOTE and recent_duration > 0.5:
                 position += 1
                 root_notes_generated.clear()
                 continue
-            if rest_probability < 0.1 * len(root_notes_generated) and root_notes_generated[
-                -1] == ROOT_NOTE and position % 1 == 0 and \
-                    recent_note == ROOT_NOTE and recent_duration > 0.5:
+            if rest_probability < 0.1 * len(root_notes_generated) and root_notes_generated[  # 8th note rest
+                -1] == ROOT_NOTE and position % 0.5 == 0 and \
+                    recent_note == ROOT_NOTE and recent_duration >= 0.5:
                 position += 0.5
                 root_notes_generated.clear()
                 continue
-            current_duration = randomize_duration(position)
+
+            current_duration = randomize_duration(position)  # generate duration
+            if consecutive_16ths % 2 != 0 and current_duration != 0.25:  # prevent singular 16th notes
+                current_duration = 0.25
+            if current_duration == 0.25:
+                consecutive_16ths += 1
+            else:
+                consecutive_16ths = 0
 
             palm_mute(bar, position, current_duration, file)
 
             current_note = insert_notes(bar, position, current_duration, file)
             file.addNote(0, 0, current_note, bar * 4 + position, current_duration, velocity.main_velocity())
             root_notes_generated.append(current_note)
+            note = {  # save a note with the following parameters to the history of generated notes
+                "pitch": current_note,
+                "duration": current_duration,
+                "position": bar * 4 + position
+            }
+            notes_generated.append(note)
 
             if current_note > 48 and position != 0:  # optional kick for higher notes
                 if random.random() < 0.4:
@@ -108,23 +126,14 @@ def generate_rhythm_guitar(file, number_of_bars):
             recent_note = current_note
             recent_duration = current_duration
 
-            note = {
-                "pitch": current_note,
-                "duration": current_duration,
-                "position": bar * 4 + position
-            }
-            notes_generated.append(note)
-
         bar += 1
-    print(notes_generated)
 
 
 def randomize_duration(position):
     duration = [0.25, 0.5, 1, 2]
-    weights = [0.5, 3, 3, 2]  # Example weights; adjust as needed to make 0.25 less likely
+    weights = [1.2, 3, 3, 2]  # chances of generating a respective duration
     allowed_duration = [dur for dur in duration if dur <= (4 - position)]
 
-    # Adjust weights to match the allowed_duration
     allowed_weights = [weights[duration.index(dur)] for dur in allowed_duration]
 
     choice = random.choices(allowed_duration, weights=allowed_weights, k=1)[0]
@@ -139,7 +148,7 @@ def insert_notes(bar, position, current_duration, file):
         diversify_notes(current_note, bar, position, current_duration, file)
         return current_note
     else:  # add 0's with (optional) 5ths
-        if (check_for_palm_mute(position, 14) is True or check_for_palm_mute(position, 12) is True) and current_duration >= 0.5:
+        if (check_for_palm_mute(position, 14) is True or check_for_palm_mute(position, 12) is True) and current_duration >= 0.5 and ROOT_NOTE >= 35:
             file.addNote(0, 0, ROOT_NOTE + 7, bar * 4 + position, current_duration, velocity.main_velocity())
         return ROOT_NOTE
 
@@ -152,11 +161,23 @@ def diversify_notes(current_note, bar, position, current_duration, file):
         if chance < 0.4:
             file.addNote(0, 0, interval, bar * 4 + position + 0.5, current_duration - 0.5,
                          velocity.main_velocity())
+            note = {
+                "pitch": interval,
+                "duration": current_duration,
+                "position": bar * 4 + position
+            }
+            notes_generated.append(note)
 
     if current_duration == 2:
         if chance < 0.66:
             file.addNote(0, 0, interval, bar * 4 + position + 1, current_duration - 1,
                          velocity.main_velocity())
+            note = {
+                "pitch": interval,
+                "duration": current_duration,
+                "position": bar * 4 + position
+            }
+            notes_generated.append(note)
 
 
 def interval_randomizer(current_note):
