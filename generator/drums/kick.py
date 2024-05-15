@@ -1,9 +1,9 @@
 import velocity
 import random
-from rhythm_guitar import rhythm_guitar_main
+from rhythm_guitar import generate_default_breakdown
 
 
 def generate_kick(file):
-    for i in rhythm_guitar_main.kick:
+    for i in generate_default_breakdown.kick:
         file.addNote(0, 0, 36, i, 0.25, velocity.main_velocity())
 
