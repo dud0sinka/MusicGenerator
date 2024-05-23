@@ -1,6 +1,4 @@
-import velocity
-from rhythm_guitar import generate_default_breakdown as gtr
-from velocity import main_velocity
+from rhythm_guitar.breakdown import default_melodic as gtr
 
 
 def copy_guitar(file):
@@ -19,7 +17,7 @@ def copy_guitar(file):
         if 29 <= note["pitch"] <= 38:
             current_low_note_position = note["position"]
 
-        if note["pitch"] == 14:
+        if note["pitch"] == 14 or note["pitch"] == 12:
             continue
 
         if note["pitch"] > 48 and note["duration"] <= 0.5 and note["position"] != last_16th_note + 0.25:
