@@ -78,5 +78,5 @@ def two_on_the_floor(repetition, file, bars):  # tun     tsh     tun     tsh
     for i in range(0, bars * 4):
         if i % 8 == 0:
             file.addNote(0, 0, 36, i + bars * 4 * repetition, 0.25, velocity.main_velocity())
-        if i % 2 == 0 and i != 0:
+        if i % 4 == 0 and i != 0:
             kick_bursts_before_snare(repetition, file, bars, i, 2)

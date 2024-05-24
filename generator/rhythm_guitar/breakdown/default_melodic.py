@@ -14,8 +14,6 @@ SCALES = {
     "MINOR_SCALE": [2, 1, 2, 2, 1, 2, 2],
     "PHRYGIAN_MODE": [1, 2, 2, 2, 1, 2, 2],
     "PHRYGIAN_DOMINANT_MODE": [1, 3, 1, 2, 1, 2, 2],
-    "MAJOR_SCALE_WITH_RAISED_4TH": [2, 2, 2, 1, 2, 2, 1],
-    "MAJOR_SCALE": [2, 2, 1, 2, 2, 2, 1],
     "HARMONIC_MINOR_SCALE": [2, 1, 2, 2, 1, 3, 1],
     "MELODIC_MINOR_SCALE_ASCENDING": [2, 1, 2, 2, 2, 2, 1],
     "DORIAN_MODE": [2, 1, 2, 2, 2, 1, 2],
@@ -41,21 +39,19 @@ consecutive_16ths = 0  # this variable is used to prevent the generation of sing
 
 start_position = 0
 
-# TODO: change the breakdown the second time it repeats, spice-up parts (octaves, runs, chords etc.)
-# TODO: different types of breakdowns (this one is default / melodic)
-# TODO: choose closest notes with higher chance
-# TODO: dead notes
 
+# TODO: change the breakdown the second time it repeats, spice-up parts (octaves, runs, regenerate, chords etc.)
+# TODO: different types of breakdowns (this one is default / melodic)
+# TODO: dead notes
+# TODO: kick for repetitions
 
 def generate(file, number_of_bars, repetitions):
     global recent_note, recent_duration, ROOT_NOTE, current_scale, consecutive_16ths
-    print("BREAKDOWN:")
     ROOT_NOTE = random.randint(ROOT_NOTE_LOWEST, ROOT_NOTE_HIGHEST)
     ending_position = 0
 
     lets_choose_a_scale = common.choose_scale(SCALES)
     common.fill_scale(ROOT_NOTE, lets_choose_a_scale, current_scale, ROOT_NOTE)
-    print(current_scale)
 
     bar = start_position
     for _ in range(number_of_bars):
@@ -64,9 +60,8 @@ def generate(file, number_of_bars, repetitions):
         ending_position = bar * 4
 
     create_kick_pattern()
-    repeat(ending_position, repetitions)
+    create_repetitions(ending_position, repetitions)
 
-    print(notes_generated)
     add_to_file(file)
     data = {"position": ending_position, "scale": current_scale, "bars": number_of_bars, "repetitions": repetitions}
     return data
@@ -114,14 +109,52 @@ def add_to_file(file):
         file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
 
 
-def repeat(ending_position, repetitions):
+def create_repetitions(ending_position, repetitions):
     notes_to_repeat = notes_generated.copy()
-    for current_repeat in range(1, repetitions):  # Start from 1, as we've already generated the first section
-        # Make a copy of the current notes_generated list
-        print(current_repeat)
+    for current_repeat in range(1, repetitions):
         for note in notes_to_repeat:
-            notes_generated.append({"pitch": note["pitch"], "duration": note["duration"],
-                                    "position": note["position"] + ending_position * current_repeat})
+            if note["pitch"] not in [12, 14]:  # Check if the pitch is not 12 or 14
+                if current_repeat == 1:
+                    if note["position"] >= 12:
+                        generate_bar(7)
+                        break
+                    else:
+                        notes_generated.append({"pitch": note["pitch"], "duration": note["duration"],
+                                                "position": note["position"] + ending_position * current_repeat})
+                elif current_repeat == 3:
+                    if note["position"] >= 8:
+                        generate_bar(14)
+                        generate_bar(15)
+                        break
+                    else:
+                        notes_generated.append({"pitch": note["pitch"], "duration": note["duration"],
+                                                "position": note["position"] + ending_position * current_repeat})
+                else:
+                    notes_generated.append({"pitch": note["pitch"], "duration": note["duration"],
+                                            "position": note["position"] + ending_position * current_repeat})
+        copy_palm_mutes_to_repetitions(current_repeat, notes_to_repeat, ending_position)
+
+
+def copy_palm_mutes_to_repetitions(current_repeat, notes_to_repeat, ending_position):  # copying palm mutes sometimes
+    # causes exceptions i cant find the reason behind; hence a separate function
+    if current_repeat == 1:
+        for pm in notes_to_repeat:  # copy to 1 repetition
+            if pm["pitch"] == 12 or pm["pitch"] == 14:
+                if pm["position"] < 11.925:
+                    notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
+                                            "position": pm["position"] + ending_position * current_repeat})
+    elif current_repeat == 2:
+        for pm in notes_to_repeat:  # copy to 2 repetition
+            if pm["pitch"] == 12 or pm["pitch"] == 14:
+                if 0.25 < pm["position"] < 15.25:
+                    notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
+                                            "position": pm["position"] + ending_position * current_repeat})
+    elif current_repeat == 3:
+        for pm in notes_to_repeat:  # copy to 3 repetition
+            if pm["pitch"] == 12 or pm["pitch"] == 14:
+                if pm["position"] < 7.925:
+                    notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
+                                            "position": pm["position"] + ending_position * current_repeat})
 
 
 def create_kick_pattern():
@@ -227,18 +260,18 @@ def palm_mute(bar, position, duration):
             pm = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position}
             notes_generated.append(pm)
         else:
-            pm = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.075}
+            pm = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.05}
             notes_generated.append(pm)
 
-        pm = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2 - 0.075}
+        pm = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2}
         notes_generated.append(pm)
 
     else:  # palm mute a long note with a certain chance
         palm_mute_chance = random.random()
         if palm_mute_chance < 0.4 and position != 0:
-            pm_on = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.075}
+            pm_on = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.05}
             notes_generated.append(pm_on)
-            pm_off = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2 - 0.075}
+            pm_off = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2}
             notes_generated.append(pm_off)
 
 

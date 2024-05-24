@@ -13,7 +13,7 @@ song_structure_elements = {
     "pre-chorus2": {"same_as_first": {}, "none": {0}},
     "chorus2": {"same": {}, "same_extended_chugging": {}, "same_ext_chug_diff_prog": {}},
     "bridge": {"chug_rest": {4, 8}, "none": {0}, "pm0_toms_056_lead": {4}, "intro": {}},
-    "breakdown": {"default_melodic": {4, 8}, "4th8th_chugs_dissonance_rests": {4, 8}, "slow_rests_4th8th": {4, 8},
+    "breakdown": {"default_melodic": {4}, "4th8th_chugs_dissonance_rests": {4, 8}, "slow_rests_4th8th": {4, 8},
                   "chromatic_double_time": {4, 8}},
     "verse3": {"none": {0}, "same_as_first": {0}},
     "pre-chorus3": {"same_as_first": {}, "none": {0}},
