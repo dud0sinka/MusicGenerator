@@ -1,5 +1,5 @@
 import random
-
+from drums import common
 from drums.breakdown.kick.kick import *
 from drums.breakdown.snare.snare import *
 
@@ -66,18 +66,11 @@ def choose_kick_variation(repetition):
         return variation
 
 
-# cymbals: 27 - china, 28, 29 - china, 30, 31, 49, 51 - ride, 52 - china, 53 - ride top, 55 - splash, 57,
-# 60 - open hat, 63 - closed hat
-# MyMIDI.addNote(track,channel,pitch,position,duration,volume)
-openers = [28, 31, 49, 57]
-power_hand = [27, 29, 52, 57, 60]
-
-
 def generate_cymbals(repetition, bars, file, current_kick, current_snare):
     global current_cymbal
 
     if current_kick != previous_kick or current_snare != previous_snare:  # conditions for current power hand change
-        current_cymbal = random.choice(power_hand)
+        current_cymbal = random.choice(common.power_hand)
     else:
         pass
 
@@ -86,7 +79,7 @@ def generate_cymbals(repetition, bars, file, current_kick, current_snare):
 
         if (position == bars * 4 * repetition and current_kick != previous_kick)\
                 or (position == bars * 4 * repetition and current_snare != previous_snare):  # opening cymbals
-            opening_cymbals(file, position)
+            common.opening_cymbals(file, position)
 
         if (i % 2 == 0 and position != bars * 4 * repetition) or (i % 2 == 0 and current_kick == previous_kick) \
                 and current_snare == previous_snare:  # current power hand cymbal
@@ -96,20 +89,6 @@ def generate_cymbals(repetition, bars, file, current_kick, current_snare):
             splash_chance = random.random()
             if splash_chance < 0.1:
                 file.addNote(0, 0, 55, position, 0.25, velocity.main_velocity())
-
-
-def opening_cymbals(file, position):
-    allowed_openers = openers.copy()
-    opener1 = random.choice(allowed_openers)
-    allowed_openers.remove(opener1)
-    opener2 = random.choice(allowed_openers)
-
-    # hit_on_2_chance = random.random()
-
-    # if hit_on_2_chance < 0.2 and position != :
-    # file.addNote(0, 0, opener1, position, 0.25, velocity.main_velocity())
-    file.addNote(0, 0, opener1, position, 0.25, velocity.main_velocity())
-    file.addNote(0, 0, opener2, position, 0.25, velocity.main_velocity())
 
 
 def generate_fill():

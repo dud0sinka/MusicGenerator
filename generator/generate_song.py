@@ -5,7 +5,7 @@ def generate_section(section_name, section_type, bars, file_rg, file_d):
     rhythm_guitar = f"rhythm_guitar.{section_name}.{section_type}"
     try:
         module = importlib.import_module(rhythm_guitar)
-        data = module.generate(file_rg, bars, 4)
+        data = module.generate(file_rg, bars, 4, 0)
     except ImportError:
         print(f"Module {rhythm_guitar} not found.")
     except AttributeError:

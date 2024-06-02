@@ -17,6 +17,8 @@ CHORD_PROGRESSIONS = {  # the numbers are the intervals to add to the current ro
     "verse_1": [0, 0, 5, 4],  # 0 0 8 7
 }
 
+# data = {"position": ending_position, "scale": current_scale, "bars": number_of_bars, "repetitions": repetitions}
+
 
 def generate(number_of_bars, file, data):
     current_scale = []  # scale that was chosen
