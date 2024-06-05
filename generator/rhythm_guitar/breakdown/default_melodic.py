@@ -1,6 +1,8 @@
 import velocity
 import random
 from rhythm_guitar import common_stuff as common
+from drums.breakdown.default_melodic import DrumsDefaultMelodicBreakdown as Drums
+from bass.bass_default_breakdown import BassDefaultMelodicBreakdown as Bass
 
 # position: 0.25 = 16th note, 0.5 = 8th note, 1 = 4th note. 1 bar has 16 positions
 # duration: 0.25 = 16th, 0.5 = 8th, 1 = 4th
@@ -32,10 +34,11 @@ INTERVALS = {
 # TODO: different types of breakdowns (this one is default / melodic)
 # TODO: dead notes
 
-class DefaultMelodicBreakdown:
+class RGuitarDefaultMelodicBreakdown:
+    kick = []  # guitar 0's are being passed here to match the kick
+
     def __init__(self, start_pos):
         self.start_pos = start_pos
-        self.kick = []  # guitar 0's are being passed here to match the kick
         self.current_scale = []  # scale that was chosen
         self.root_notes_generated = []  # amount of generated 0's is affecting the amount of rests
         self.ROOT_NOTE = 0
@@ -44,7 +47,7 @@ class DefaultMelodicBreakdown:
         self.notes_generated = []  # all notes generated
         self.consecutive_16ths = 0  # this variable is used to prevent the generation of singular 16th notes
 
-    def generate(self, file, number_of_bars, repetitions):
+    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions):
         self.ROOT_NOTE = random.randint(ROOT_NOTE_LOWEST, ROOT_NOTE_HIGHEST)
         ending_position = 0
 
@@ -60,9 +63,13 @@ class DefaultMelodicBreakdown:
         self.create_kick_pattern()
         self.create_repetitions(ending_position, repetitions)
 
-        self.add_to_file(file)
+        self.add_to_file(gtr_file)
+
         data = {"position": ending_position + self.start_pos, "scale": self.current_scale,
                 "bars": number_of_bars, "repetitions": repetitions}
+        Drums(self.start_pos).generate(drum_file, data, RGuitarDefaultMelodicBreakdown.kick)  # generate drums
+        Bass(self.notes_generated).copy_guitar(bass_file)
+
         return data
 
     def generate_bar(self, bar):
@@ -155,15 +162,15 @@ class DefaultMelodicBreakdown:
 
     def create_kick_pattern(self):
         for note in self.notes_generated:
-            if note["position"] == self.start_pos and note["position"] not in self.kick:
-                self.kick.append(self.start_pos)
+            if note["position"] == self.start_pos and note["position"] not in RGuitarDefaultMelodicBreakdown.kick:
+                RGuitarDefaultMelodicBreakdown.kick.append(self.start_pos)
                 continue
-            if note["pitch"] > ROOT_NOTE_HIGHEST and note["position"] not in self.kick:  # optional kick for high notes
+            if note["pitch"] > ROOT_NOTE_HIGHEST and note["position"] not in RGuitarDefaultMelodicBreakdown.kick:  # optional kick for high notes
                 if random.random() < 0.4:
-                    self.kick.append(note["position"])
+                    RGuitarDefaultMelodicBreakdown.kick.append(note["position"])
                 continue
-            if ROOT_NOTE_LOWEST <= note["pitch"] <= ROOT_NOTE_HIGHEST and note["position"] not in self.kick:
-                self.kick.append(note["position"])  # remembering guitar accents to pass to the kick drum\
+            if ROOT_NOTE_LOWEST <= note["pitch"] <= ROOT_NOTE_HIGHEST and note["position"] not in RGuitarDefaultMelodicBreakdown.kick:
+                RGuitarDefaultMelodicBreakdown.kick.append(note["position"])  # remembering guitar accents to pass to the kick drum\
 
     @staticmethod
     def randomize_duration(position):

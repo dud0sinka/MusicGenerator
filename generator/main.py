@@ -18,8 +18,8 @@ bass_MIDI = MIDIFile(1)
 # structure_elements.pick_structure()
 # intro.generate(4, r_gtr_MIDI)
 # drumintro.generate(4, dr_MIDI)
-test = default_melodic.DefaultMelodicBreakdown(100)
-test.generate(r_gtr_MIDI, 4, 4)
+test = default_melodic.RGuitarDefaultMelodicBreakdown(100)
+test.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, 4, 4)
 
 with open("midis/rhythm_guitar.mid", "wb") as output_file:
     r_gtr_MIDI.writeFile(output_file)
