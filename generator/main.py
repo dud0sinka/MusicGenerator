@@ -1,10 +1,6 @@
 from midiutil import MIDIFile
-import generate_song
-import structure_elements
-from bass import bass_default_breakdown as b
-import rhythm_guitar.intro.open0_drum_fill as intro
-import drums.intro.open0_drum_fill as drumintro
 from rhythm_guitar.breakdown import default_melodic
+from rhythm_guitar.intro import open0_drum_fill
 #  tempo
 
 r_gtr_MIDI = MIDIFile(1)
@@ -18,7 +14,10 @@ bass_MIDI = MIDIFile(1)
 # structure_elements.pick_structure()
 # intro.generate(4, r_gtr_MIDI)
 # drumintro.generate(4, dr_MIDI)
-test = default_melodic.RGuitarDefaultMelodicBreakdown(100)
+test1 = open0_drum_fill.RGuitarIntoOpen0DrumFill()
+pos = test1.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, 4)
+root = test1.get_root()
+test = default_melodic.RGuitarDefaultMelodicBreakdown(pos, root)
 test.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, 4, 4)
 
 with open("midis/rhythm_guitar.mid", "wb") as output_file:

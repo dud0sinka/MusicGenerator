@@ -2,7 +2,7 @@ import velocity
 import random
 from rhythm_guitar import common_stuff as common
 from drums.breakdown.default_melodic import DrumsDefaultMelodicBreakdown as Drums
-from bass.bass_default_breakdown import BassDefaultMelodicBreakdown as Bass
+from bass.breakdown.bass_default_breakdown import BassDefaultMelodicBreakdown as Bass
 
 # position: 0.25 = 16th note, 0.5 = 8th note, 1 = 4th note. 1 bar has 16 positions
 # duration: 0.25 = 16th, 0.5 = 8th, 1 = 4th
@@ -37,18 +37,17 @@ INTERVALS = {
 class RGuitarDefaultMelodicBreakdown:
     kick = []  # guitar 0's are being passed here to match the kick
 
-    def __init__(self, start_pos):
+    def __init__(self, start_pos, root_note):
         self.start_pos = start_pos
         self.current_scale = []  # scale that was chosen
         self.root_notes_generated = []  # amount of generated 0's is affecting the amount of rests
-        self.ROOT_NOTE = 0
+        self.ROOT_NOTE = root_note
         self.recent_note = 0  # keep track of the last note played
         self.recent_duration = 0  # keep track of the duration of the lat note played
         self.notes_generated = []  # all notes generated
         self.consecutive_16ths = 0  # this variable is used to prevent the generation of singular 16th notes
 
     def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions):
-        self.ROOT_NOTE = random.randint(ROOT_NOTE_LOWEST, ROOT_NOTE_HIGHEST)
         ending_position = 0
 
         lets_choose_a_scale = common.choose_scale(SCALES)
@@ -63,7 +62,7 @@ class RGuitarDefaultMelodicBreakdown:
         self.create_kick_pattern()
         self.create_repetitions(ending_position, repetitions)
 
-        self.add_to_file(gtr_file)
+        self.write_to_file(gtr_file)
 
         data = {"position": ending_position + self.start_pos, "scale": self.current_scale,
                 "bars": number_of_bars, "repetitions": repetitions}
@@ -107,7 +106,7 @@ class RGuitarDefaultMelodicBreakdown:
             self.recent_note = current_note
             self.recent_duration = current_duration
 
-    def add_to_file(self, file):
+    def write_to_file(self, file):
         for note in self.notes_generated:
             file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
 
