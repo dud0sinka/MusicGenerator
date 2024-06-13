@@ -3,7 +3,7 @@ import random
 song_structure_elements = {
     "intro": {"none": {0}, "open0_drum_fill": {2, 4}, "drum_fill": {1, 2}, "smth": {1, 2},
               "strings_smth": {4}, "halfbar_chug_octaves": {4, 8}},
-    "verse1": {"pedal_tone_riff": {4: {4}, 8: {2}}, "open_string_riff": {4}, "tremolo_chord_root": {4},
+    "verse1": {"pedal_tone_riff": {4, 8}, "open_string_riff": {4}, "tremolo_chord_root": {4},
                "tremolo_three_notes": {4, 8}},
     "pre-chorus1": {"lofi_verse_halfbar_chug": {4: {2, 4}}, "triplet_pm0_chugs_optional_lower_notes": {4: {2, 4}},
                     "rest": {1}, "none": {0}, "chord_prog_breakdown": {4: {2, 4}}},

@@ -7,19 +7,28 @@ class DrumsIntoOpen0DrumFill:
     def __init__(self, file):
         self.file = file
 
-    def generate(self, bars):
+    def generate(self, bars, snare_fill):
         self.kick_and_openers()
+
+        snare_offset = 0
+        if snare_fill:
+            snare_offset = 0.5
+
         if bars == 2:
             if random.random() > 0.5:  # randomize where the fill begins
-                common.generate_triplet_fill(4, 1, self.file)
+                common.choose_and_generate_fill(4, 1 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
             else:
-                common.generate_fast_fill(6, 0.5, self.file)
+                common.choose_and_generate_fill(6, 0.5 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
         if bars == 4:
             if random.random() > 0.5:  # randomize where the fill begins
-                common.generate_fast_fill(8, 2, self.file)
+                common.choose_and_generate_fill(8, 2 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
                 self.insert_cymbals_on_upbeat(8)
             else:
-                common.generate_fast_fill(12, 1, self.file)
+                common.choose_and_generate_fill(12, 1 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
                 self.insert_cymbals_on_upbeat(12)
 
     def kick_and_openers(self):
