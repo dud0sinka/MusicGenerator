@@ -54,7 +54,7 @@ class RGuitarPedalToneRiff:
 
         return extended_progression
 
-    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False):
+    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False, lead_var=0.45):
         self.set_number_of_bars(number_of_bars, repetitions)
         ending_position = 0
         high_note_multiplier = 0 if lead_flag is False else 0.45
@@ -76,7 +76,7 @@ class RGuitarPedalToneRiff:
         ending_position = self.create_repetitions(ending_position, repetitions, number_of_bars)
         data = {"position": ending_position + self.start_pos,
                 "bars": number_of_bars, "repetitions": repetitions}
-        self.write_to_file(gtr_file, lead_flag)
+        self.write_to_file(gtr_file, lead_flag, lead_var)
 
         if lead_flag is False:
             Drums(self.start_pos).generate(drum_file, data)  # generate drums
@@ -172,14 +172,14 @@ class RGuitarPedalToneRiff:
 
         return end_pos_to_return
 
-    def write_to_file(self, file, lead_flag=False):
+    def write_to_file(self, file, lead_flag=False, chance=0.45):
         if lead_flag is False:
             for note in self.notes_generated:  # normal verse riffs
                 file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
         else:
 
             lead_start_pos = self.start_pos + self.number_of_bars * 4 * self.repetitions / 2
-            skip_1st_half_flag = True if random.random() < 0.45 else False
+            skip_1st_half_flag = True if random.random() < chance else False
 
             for note in self.notes_generated:  # lead licks
                 if note["position"] < lead_start_pos and skip_1st_half_flag:

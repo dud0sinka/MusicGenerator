@@ -33,7 +33,7 @@ INTERVALS = {
 
 class RGuitarDefaultMelodicBreakdown:
 
-    def __init__(self, start_pos, root_note, progression=None, scale=None):
+    def __init__(self, start_pos, root_note, progression=None, scale=None, lead_file=None):
         self.start_pos = start_pos
         self.current_scale = [] if scale is None else scale  # scale that was chosen
         self.root_notes_generated = []  # amount of generated 0's is affecting the amount of rests
@@ -45,6 +45,7 @@ class RGuitarDefaultMelodicBreakdown:
         self.data = {}
         self.kick = []  # guitar 0's are being passed here to match the kick
         self.progression = progression  # for one of the pre-chorus variations
+        self.lead_file = None if lead_file is None else lead_file
 
     def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, outside_flag=False):
         ending_position = 0
@@ -71,6 +72,10 @@ class RGuitarDefaultMelodicBreakdown:
                      "bars": number_of_bars, "repetitions": repetitions}
         Drums(self.start_pos, outside_flag).generate(drum_file, self.data, self.kick)  # generate drums
         Bass(self.notes_generated).copy_guitar(bass_file)  # generate bass
+
+        if self.lead_file is not None:  # generate lead
+            if random.random() < 0.55:
+                self.generate_lead(self.lead_file, number_of_bars, repetitions)
 
         return ending_position + self.start_pos
 
@@ -118,7 +123,8 @@ class RGuitarDefaultMelodicBreakdown:
             file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
 
     def generate_lead(self, lead_file, number_of_bars, repetitions):
-        lead = Guitar(self.start_pos, self.ROOT_NOTE, [0, 0, 0, 0], self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True)
+        progression = [0, 0, 0, 0] if self.progression is None else self.progression
+        lead = Guitar(self.start_pos, self.ROOT_NOTE, progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True, 1.01)
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
         notes_to_repeat = self.notes_generated.copy()

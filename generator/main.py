@@ -16,18 +16,18 @@ intro_bars = 4  # 4 or 2
 pos = intro.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, intro_bars)
 root = intro.get_root()
 #####verse####
-verse_bars = 4  # 8 or 4
+verse_bars = 4  # 4
 verse = pedal_tone_riff.RGuitarPedalToneRiff(pos, root)
 pos = verse.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, verse_bars, 4)
 ####pre-chorus####
-pos = chord_prog_breakdown.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, pos, root, verse.progression, verse.current_scale, verse_bars)
+pos = chord_prog_breakdown.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, pos, root, verse.progression, verse.current_scale)
 ####chorus####
 chorus_bars = 4  # reps 4
 chorus = chorus.RGuitarChorus(pos, root)
 pos = chorus.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, chorus_bars, 4, l_gtr_MIDI)
 ####breakdown#####
-breakdown_repetitions = 8  # 4 or 8
-breakdown = default_melodic.RGuitarDefaultMelodicBreakdown(pos, root)
+breakdown_repetitions = 4  # reps 4
+breakdown = default_melodic.RGuitarDefaultMelodicBreakdown(pos, root, None, None, l_gtr_MIDI)
 breakdown.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, 4, breakdown_repetitions)  # add variation
 
 # TODO: pre-breakdown two bars of melodic br guitar
