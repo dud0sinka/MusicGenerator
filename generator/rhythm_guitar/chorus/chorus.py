@@ -61,7 +61,7 @@ class RGuitarChorus:
         return ending_position + self.start_pos
 
     def generate_lead(self, lead_file, number_of_bars, repetitions):
-        lead = Guitar(self.start_pos, self.ROOT_NOTE, self.progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True)
+        lead = Guitar(self.start_pos, self.ROOT_NOTE, self.progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True, True)
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
         end_pos_to_return = ending_position

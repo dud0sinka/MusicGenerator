@@ -24,9 +24,6 @@ CHORD_PROGRESSIONS = {  # the numbers are the intervals to add to the current ro
 }
 
 
-# data = {"position": ending_position, "scale": current_scale, "bars": number_of_bars, "repetitions": repetitions}
-
-
 class RGuitarPedalToneRiff:
     def __init__(self, start_pos, root_note, progression=None, scale=None):
         self.start_pos = start_pos
@@ -43,18 +40,7 @@ class RGuitarPedalToneRiff:
         self.number_of_bars = number_of_bars
         self.repetitions = repetitions
 
-    def extend_progression(self, number_of_bars):
-        extended_progression = []
-        chosen_progression = random.choice(list(CHORD_PROGRESSIONS.values())) if number_of_bars == 4 else \
-            random.choice([v for k, v in CHORD_PROGRESSIONS.items() if k != "verse_0"])
-
-        for i in range(4):
-            extended_progression.append(chosen_progression[i])
-            extended_progression.append(chosen_progression[i])
-
-        return extended_progression
-
-    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False, lead_var=0.45):
+    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False, chorus_flag=False, amb_flag=False):
         self.set_number_of_bars(number_of_bars, repetitions)
         ending_position = 0
         high_note_multiplier = 0 if lead_flag is False else 0.45
@@ -64,8 +50,7 @@ class RGuitarPedalToneRiff:
             common.fill_scale(self.ROOT_NOTE, lets_choose_a_scale, self.current_scale, self.ROOT_NOTE)
 
         if self.progression is None:
-            self.progression = random.choice(list(CHORD_PROGRESSIONS.values())) if number_of_bars == 4 \
-                else self.extend_progression(number_of_bars)
+            self.progression = random.choice(list(CHORD_PROGRESSIONS.values()))
 
         bar = 0
         for _ in range(number_of_bars):
@@ -76,9 +61,9 @@ class RGuitarPedalToneRiff:
         ending_position = self.create_repetitions(ending_position, repetitions, number_of_bars)
         data = {"position": ending_position + self.start_pos,
                 "bars": number_of_bars, "repetitions": repetitions}
-        self.write_to_file(gtr_file, lead_flag, lead_var)
+        self.write_to_file(gtr_file, lead_flag, chorus_flag)
 
-        if lead_flag is False:
+        if lead_flag is False and amb_flag is False:
             Drums(self.start_pos).generate(drum_file, data)  # generate drums
             write(bass_file, self.bass_notes)  # generate bass
 
@@ -124,38 +109,6 @@ class RGuitarPedalToneRiff:
                         if note_to_repeat["pitch"] > 14:
                             self.bass_notes.append(note_to_repeat)
 
-                elif current_repeat == 1 and number_of_bars == 8:  # modify 1st repeat for 8 bars
-                    if random.random() < 0.30:
-                        # optional change of the last root note of the progression
-                        self.progression[-1] = random.choice(
-                            list(set(range(len(self.current_scale[:8]))) - set(self.progression)))
-                    if note["position"] >= 28 + self.start_pos:
-                        self.generate_bar(15, 8, 1, 0.6)
-                        break
-                    else:
-                        note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                          "position": note["position"] + ending_position * current_repeat}
-                        self.notes_generated.append(note_to_repeat)
-                        if note_to_repeat["pitch"] > 14:
-                            self.bass_notes.append(note_to_repeat)
-
-                elif current_repeat == 3 and number_of_bars == 8:  # modify 3rd repeat for 8 bars
-                    if note["position"] >= 24 + self.start_pos:
-                        self.generate_bar(30, 8, 3, 0.6)
-                        if random.random() < 0.45:
-                            # optional change of the last root note of the progression
-                            self.progression[-1] = random.choice(
-                                list(set(range(len(self.current_scale[:8]))) - set(self.progression)))
-                        self.generate_bar(31, 8, 3, 0.6)
-                        break
-                    else:
-                        note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                          "position": note["position"] + ending_position * current_repeat}
-                        self.notes_generated.append(note_to_repeat)
-
-                        if note_to_repeat["pitch"] > 14:
-                            self.bass_notes.append(note_to_repeat)
-
                 else:
                     note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
                                       "position": note["position"] + ending_position * current_repeat}
@@ -172,20 +125,25 @@ class RGuitarPedalToneRiff:
 
         return end_pos_to_return
 
-    def write_to_file(self, file, lead_flag=False, chance=0.45):
-        if lead_flag is False:
-            for note in self.notes_generated:  # normal verse riffs
-                file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
-        else:
+    def write_to_file(self, file, lead_flag=False, chorus_flag=False, amb_flag=False):
+        if not lead_flag and not amb_flag and not chorus_flag:  # normal verse riffs
+            for note in self.notes_generated:
+                file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())\
 
-            lead_start_pos = self.start_pos + self.number_of_bars * 4 * self.repetitions / 2
-            skip_1st_half_flag = True if random.random() < chance else False
+        elif not amb_flag and lead_flag:  # lead licks
+            lead_start_pos = self.start_pos + self.number_of_bars * 4 * self.repetitions / 2 if not chorus_flag else self.start_pos + self.number_of_bars * 4 * self.repetitions / random.choice([1, 2])
 
-            for note in self.notes_generated:  # lead licks
-                if note["position"] < lead_start_pos and skip_1st_half_flag:
+            for note in self.notes_generated:
+                if note["position"] < lead_start_pos and not chorus_flag:
                     continue
                 if note["pitch"] not in [12, 14]:
                     file.addNote(0, 0, note["pitch"] + 12, note["position"], note["duration"], velocity.main_velocity())
+                else:
+                    file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
+        else:
+            for note in self.notes_generated:  # amb licks
+                if note["pitch"] not in [12, 14]:
+                    file.addNote(0, 0, note["pitch"] + random.choice([12, 24]), note["position"], note["duration"], velocity.main_velocity())
                 else:
                     file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
 

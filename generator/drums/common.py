@@ -30,6 +30,7 @@ def choose_and_generate_fill(start_pos, bars, file):
             else:
                 generate_fast_fill(i, 0.5, file)
         i += 2
+    return end_pos
 
 
 def generate_fast_fill(start_pos, bars, file):

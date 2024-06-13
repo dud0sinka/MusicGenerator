@@ -1,4 +1,8 @@
+import random
+
 from midiutil import MIDIFile
+
+import drums.common
 from rhythm_guitar.breakdown import default_melodic
 from rhythm_guitar.intro import open0_drum_fill
 from rhythm_guitar.verse import pedal_tone_riff
@@ -9,6 +13,7 @@ r_gtr_MIDI = MIDIFile(1)
 dr_MIDI = MIDIFile(1)
 bass_MIDI = MIDIFile(1)
 l_gtr_MIDI = MIDIFile(1)
+amb_MIDI = MIDIFile(1)
 
 ####intro#####
 intro = open0_drum_fill.RGuitarIntoOpen0DrumFill()
@@ -21,13 +26,14 @@ verse = pedal_tone_riff.RGuitarPedalToneRiff(pos, root)
 pos = verse.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, verse_bars, 4)
 ####pre-chorus####
 pos = chord_prog_breakdown.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, pos, root, verse.progression, verse.current_scale)
+pos = drums.common.choose_and_generate_fill(pos, random.choice([0, 0.5, 1, 2]), dr_MIDI)  # optional fill before chorus
 ####chorus####
 chorus_bars = 4  # reps 4
 chorus = chorus.RGuitarChorus(pos, root)
 pos = chorus.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, chorus_bars, 4, l_gtr_MIDI)
 ####breakdown#####
 breakdown_repetitions = 4  # reps 4
-breakdown = default_melodic.RGuitarDefaultMelodicBreakdown(pos, root, None, None, l_gtr_MIDI)
+breakdown = default_melodic.RGuitarDefaultMelodicBreakdown(pos, root, None, None, l_gtr_MIDI, amb_MIDI)
 breakdown.generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, 4, breakdown_repetitions)  # add variation
 
 # TODO: pre-breakdown two bars of melodic br guitar
@@ -42,3 +48,6 @@ with open("midis/bass.mid", "wb") as output_file:
 
 with open("midis/lead.mid", "wb") as output_file:
     l_gtr_MIDI.writeFile(output_file)
+
+with open("midis/amb.mid", "wb") as output_file:
+    amb_MIDI.writeFile(output_file)

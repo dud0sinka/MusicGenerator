@@ -4,7 +4,7 @@ from rhythm_guitar import common_stuff as common
 from drums.breakdown.default_melodic import DrumsDefaultMelodicBreakdown as Drums
 from bass.breakdown.bass_default_breakdown import BassDefaultMelodicBreakdown as Bass
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar
-
+from ambient import ambient
 # position: 0.25 = 16th note, 0.5 = 8th note, 1 = 4th note. 1 bar has 16 positions
 # duration: 0.25 = 16th, 0.5 = 8th, 1 = 4th
 # we use bar * 4 because we count bars as 0, 1, 2..... but in terms of position 1 bar equals to 4
@@ -33,7 +33,7 @@ INTERVALS = {
 
 class RGuitarDefaultMelodicBreakdown:
 
-    def __init__(self, start_pos, root_note, progression=None, scale=None, lead_file=None):
+    def __init__(self, start_pos, root_note, progression=None, scale=None, lead_file=None, amb_file=None):
         self.start_pos = start_pos
         self.current_scale = [] if scale is None else scale  # scale that was chosen
         self.root_notes_generated = []  # amount of generated 0's is affecting the amount of rests
@@ -46,6 +46,8 @@ class RGuitarDefaultMelodicBreakdown:
         self.kick = []  # guitar 0's are being passed here to match the kick
         self.progression = progression  # for one of the pre-chorus variations
         self.lead_file = None if lead_file is None else lead_file
+        self.amb_file = None if amb_file is None else amb_file
+        self.is_lead = False
 
     def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, outside_flag=False):
         ending_position = 0
@@ -75,8 +77,10 @@ class RGuitarDefaultMelodicBreakdown:
 
         if self.lead_file is not None:  # generate lead
             if random.random() < 0.55:
+                self.is_lead = True
                 self.generate_lead(self.lead_file, number_of_bars, repetitions)
-
+        if self.amb_file is not None:  # generate ambience
+            ambient.generate(self.amb_file, number_of_bars, repetitions, self.start_pos, self.ROOT_NOTE, self.current_scale, self.is_lead)
         return ending_position + self.start_pos
 
     def generate_bar(self, bar, root_note=None):
@@ -124,7 +128,8 @@ class RGuitarDefaultMelodicBreakdown:
 
     def generate_lead(self, lead_file, number_of_bars, repetitions):
         progression = [0, 0, 0, 0] if self.progression is None else self.progression
-        lead = Guitar(self.start_pos, self.ROOT_NOTE, progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True, 1.01)
+        lead = Guitar(self.start_pos, self.ROOT_NOTE, progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True)
+        return
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
         notes_to_repeat = self.notes_generated.copy()
@@ -132,7 +137,7 @@ class RGuitarDefaultMelodicBreakdown:
         for current_repeat in range(1, repetitions):
             for note in notes_to_repeat:
                 if note["pitch"] not in [12, 14]:  # Check if the pitch is not 12 or 14
-                    if current_repeat in [1, 5]:  # modify 1st and 3rd repeats
+                    if current_repeat == 1:  # modify 1st and 3rd repeats
                         if note["position"] >= 12 + self.start_pos:
                             self.generate_bar(4 + current_repeat * 4 - 1)
                             break
@@ -140,7 +145,7 @@ class RGuitarDefaultMelodicBreakdown:
                             self.notes_generated.append({"pitch": note["pitch"], "duration": note["duration"],
                                                          "position": note[
                                                                          "position"] + ending_position * current_repeat})
-                    elif current_repeat in [3, 7]:
+                    elif current_repeat == 3:
                         if note["position"] >= 8 + self.start_pos:
                             self.generate_bar(4 + current_repeat * 4 - 2)
                             self.generate_bar(4 + current_repeat * 4 - 1)
