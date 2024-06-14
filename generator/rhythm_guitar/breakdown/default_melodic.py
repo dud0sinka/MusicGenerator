@@ -28,7 +28,6 @@ INTERVALS = {
 
 # TODO: spice-up parts (octaves, runs, regenerate, chords etc.)
 # TODO: different types of breakdowns (this one is default / melodic)
-# TODO: dead notes
 
 
 class RGuitarDefaultMelodicBreakdown:
@@ -44,10 +43,11 @@ class RGuitarDefaultMelodicBreakdown:
         self.consecutive_16ths = 0  # this variable is used to prevent the generation of singular 16th notes
         self.data = {}
         self.kick = []  # guitar 0's are being passed here to match the kick
-        self.progression = progression  # for one of the pre-chorus variations
+        self.progression = None if progression is None else progression # for one of the pre-chorus variations
         self.lead_file = None if lead_file is None else lead_file
         self.amb_file = None if amb_file is None else amb_file
         self.is_lead = False
+        self.type2 = True if random.random() < 0.3 and progression is None else False
 
     def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, outside_flag=False):
         ending_position = 0
@@ -205,7 +205,7 @@ class RGuitarDefaultMelodicBreakdown:
 
     def randomize_duration(self, position):
         duration = [0.25, 0.5, 1, 2]
-        weights = [1, 3, 3, 1]  # chances of generating a respective duration
+        weights = [1, 3, 3, 1]  if not self.type2 else [2, 4, 1.5, 0.5]
         allowed_duration = [dur for dur in duration if dur <= (4 - position)]
 
         allowed_weights = [weights[duration.index(dur)] for dur in allowed_duration]
@@ -215,7 +215,7 @@ class RGuitarDefaultMelodicBreakdown:
         return choice
 
     def insert_notes(self, bar, position, current_duration, root_note=None):
-        high_notes = self.current_scale[7:]
+        high_notes = self.current_scale[7:] if not self.type2 else self.current_scale[:7]
         chance = random.random()
         condition = True if (self.check_for_palm_mute(position, 14) is True or
                              self.check_for_palm_mute(position, 12) is True) \
@@ -238,6 +238,9 @@ class RGuitarDefaultMelodicBreakdown:
             return root_note
 
     def insert_rests(self, position):
+        if self.type2:
+            print("type2")
+            return -1
         rest_probability = random.random() if self.progression is None else 1  # no rests needed for a progression sect.
         if rest_probability < 0.02 * len(self.root_notes_generated) and self.root_notes_generated[  # half note rest
             -1] == self.ROOT_NOTE and position % 1 == 0 and \

@@ -11,8 +11,8 @@ double_time_power_hand = [27, 29, 52, 57, 60, 51, 53]
 # 60 - open hat, 63 - closed hat
 # MyMIDI.addNote(track,channel,pitch,position,duration,volume)
 
-def choose_and_generate_fill(start_pos, bars, file):
-    fills = ["fast", "triplet", "snare", "tss"]
+def choose_and_generate_fill(start_pos, bars, file, intro=False):
+    fills = ["fast", "triplet", "snare", "tss"] if not intro else ["fast", "snare"]
     i = start_pos
     end_pos = start_pos + bars * 4
     while i < end_pos:
@@ -108,4 +108,3 @@ def opening_cymbals(file, position, cymbals=2):
     file.addNote(0, 0, opener1, position, 0.25, velocity.main_velocity())
     if cymbals == 2:
         file.addNote(0, 0, opener2, position, 0.25, velocity.main_velocity())
-

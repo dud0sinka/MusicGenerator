@@ -7,6 +7,8 @@ class BassDefaultMelodicBreakdown:
 
     def copy_guitar(self, file):
         for note in self.guitar_notes:
+            if 92 <= note["pitch"] <= 95:
+                continue
             if note["duration"] == 0.25:
                 self.last_16th_note = note["position"]
 

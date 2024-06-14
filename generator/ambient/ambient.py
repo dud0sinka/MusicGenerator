@@ -9,8 +9,9 @@ def generate(amb_file, number_of_bars, repetitions, start_pos, root, scale, is_l
     else:
         if random.random() > 0.69:
             start_pos += 32
+            repetitions //= 2
 
-    if random.random() > 0.35:
+    if random.random() > 0.45:
         Guitar(start_pos, root, [0, 0, 0, 0], scale).generate(amb_file, None, None,
                                                               number_of_bars, repetitions,
                                                               False, False, True)
