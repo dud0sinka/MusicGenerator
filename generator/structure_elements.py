@@ -11,12 +11,10 @@ song_structure_elements = {
     "post-chorus": {"not_chosen_pre_chorus": {}},
     "verse2": {"same_as_first_var": {}},
     "pre-chorus2": {"same_as_first": {}, "none": {0}},
-    "chorus2": {"same": {}, "same_extended_chugging": {}, "same_ext_chug_diff_prog": {}},
-    "bridge": {"chug_rest": {4, 8}, "none": {0}, "pm0_toms_056_lead": {4}, "intro": {}},
+    "chorus2": {"same": {}, "none": {}},
+    "bridge": { "none": {0}, "intro": {}},
     "breakdown": {"default_melodic": {4}, "4th8th_chugs_dissonance_rests": {4, 8}, "slow_rests_4th8th": {4, 8},
                   "chromatic_double_time": {4, 8}},
-    "verse3": {"none": {0}, "same_as_first": {0}},
-    "pre-chorus3": {"same_as_first": {}, "none": {0}},
     "chorus3": {"none": {0}, "chorus2": {}},
     "outro": {"verse_loop_chug": {5}, "chug": {1}, "long_0": {4}}
 }
@@ -24,7 +22,7 @@ song_structure_elements = {
 # TODO: everything is guitar-based, each guitar section / repetition calls to other functions for variations and/or
 #  additions (both for guitar and drum parts)
 # TODO: each section type has its own set of allowed variations
-# if pre-breakdown is intro drum fill then stop at 3 with a kick and tom snare hit
+# if pre_breakdown is intro drum fill then stop at 3 with a kick and tom snare hit
 # smth is variations / spice-ups
 #
 

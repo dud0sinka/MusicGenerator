@@ -68,7 +68,8 @@ class RGuitarDefaultMelodicBreakdown:
         self.create_kick_pattern()
         ending_position = self.create_repetitions(ending_position, repetitions, number_of_bars)
 
-        self.write_to_file(gtr_file)
+        if gtr_file is not None:
+            self.write_to_file(gtr_file)
 
         self.data = {"position": ending_position + self.start_pos,
                      "bars": number_of_bars, "repetitions": repetitions}
@@ -80,7 +81,8 @@ class RGuitarDefaultMelodicBreakdown:
                 self.is_lead = True
                 self.generate_lead(self.lead_file, number_of_bars, repetitions)
         if self.amb_file is not None:  # generate ambience
-            ambient.generate(self.amb_file, number_of_bars, repetitions, self.start_pos, self.ROOT_NOTE, self.current_scale, self.is_lead)
+            amb = False if gtr_file is not None else True
+            ambient.generate(self.amb_file, number_of_bars, repetitions, self.start_pos, self.ROOT_NOTE, self.current_scale, self.is_lead, amb)
         return ending_position + self.start_pos
 
     def generate_bar(self, bar, root_note=None):
@@ -239,7 +241,6 @@ class RGuitarDefaultMelodicBreakdown:
 
     def insert_rests(self, position):
         if self.type2:
-            print("type2")
             return -1
         rest_probability = random.random() if self.progression is None else 1  # no rests needed for a progression sect.
         if rest_probability < 0.02 * len(self.root_notes_generated) and self.root_notes_generated[  # half note rest

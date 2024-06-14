@@ -4,8 +4,9 @@ import random
 
 
 class DrumsIntoOpen0DrumFill:
-    def __init__(self, file):
+    def __init__(self, file, start_pos=0):
         self.file = file
+        self.start_pos = start_pos
 
     def generate(self, bars, snare_fill):
         self.kick_and_openers()
@@ -16,24 +17,24 @@ class DrumsIntoOpen0DrumFill:
 
         if bars == 2:
             if random.random() > 0.5:  # randomize where the fill begins
-                common.choose_and_generate_fill(4, 1 - snare_offset, self.file)
-                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
+                common.choose_and_generate_fill(4 + self.start_pos, 1 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)
             else:
-                common.choose_and_generate_fill(6, 0.5 - snare_offset, self.file)
-                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
+                common.choose_and_generate_fill(6 + self.start_pos, 0.5 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)
         if bars == 4:
             if random.random() > 0.5:  # randomize where the fill begins
-                common.choose_and_generate_fill(8, 2 - snare_offset, self.file)
-                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
-                self.insert_cymbals_on_upbeat(8)
+                common.choose_and_generate_fill(8 + self.start_pos, 2 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)
+                self.insert_cymbals_on_upbeat(8 + self.start_pos)
             else:
-                common.choose_and_generate_fill(12, 1 - snare_offset, self.file)
-                common.generate_snare_fill(bars * 4 - 2, snare_offset, self.file)
-                self.insert_cymbals_on_upbeat(12)
+                common.choose_and_generate_fill(12 + self.start_pos, 1 - snare_offset, self.file)
+                common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)
+                self.insert_cymbals_on_upbeat(12 + self.start_pos)
 
     def kick_and_openers(self):
-        self.file.addNote(0, 0, 36, 0, 0.25, velocity.main_velocity())
-        common.opening_cymbals(self.file, 0)
+        self.file.addNote(0, 0, 36, self.start_pos, 0.25, velocity.main_velocity())
+        common.opening_cymbals(self.file, self.start_pos)
 
     def insert_cymbals_on_upbeat(self, fill_start_pos):
         if random.random() > 0.7:
