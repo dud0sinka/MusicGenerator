@@ -1,6 +1,3 @@
-import velocity
-
-
 class BassIntoOpen0DrumFill:
     def __init__(self, root_note, file, start_pos=0):
         self.root_note = root_note

@@ -1,4 +1,4 @@
-import velocity
+from misc import velocity
 import random
 from rhythm_guitar import common_stuff as common
 from drums.breakdown.default_melodic import DrumsDefaultMelodicBreakdown as Drums

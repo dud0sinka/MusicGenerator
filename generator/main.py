@@ -1,7 +1,6 @@
-import random
 from midiutil import MIDIFile
 
-import generate_main
+from misc import generate_main
 
 r_gtr_MIDI = MIDIFile(1)
 dr_MIDI = MIDIFile(1)

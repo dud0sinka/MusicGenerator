@@ -1,6 +1,6 @@
 import random
 
-from generate_song import GenerateSong
+from misc.generate_song import GenerateSong
 
 
 def generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, l_gtr_MIDI, amb_MIDI):

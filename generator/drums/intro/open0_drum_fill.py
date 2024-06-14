@@ -1,4 +1,4 @@
-import velocity
+from misc import velocity
 from drums import common
 import random
 

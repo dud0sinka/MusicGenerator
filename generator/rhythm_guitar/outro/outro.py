@@ -1,9 +1,8 @@
 import random
 
 import drums.common
-import generate_song
 import rhythm_guitar.intro.intro
-import velocity
+from misc import velocity
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff
 
 

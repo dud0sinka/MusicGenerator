@@ -1,4 +1,3 @@
-import random
 from drums import common
 from drums.kick.kick import *
 from drums.snare.snare import *

@@ -1,5 +1,5 @@
 import random
-import velocity
+from misc import velocity
 from rhythm_guitar.intro import intro
 from drums.common import choose_and_generate_fill
 from rhythm_guitar.breakdown.default_melodic import RGuitarDefaultMelodicBreakdown

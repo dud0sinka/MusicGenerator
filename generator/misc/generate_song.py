@@ -1,7 +1,7 @@
 import random
 
 import rhythm_guitar.outro.outro
-import velocity
+from misc import velocity
 from rhythm_guitar.breakdown.default_melodic import RGuitarDefaultMelodicBreakdown
 from rhythm_guitar.chorus.chorus import RGuitarChorus
 from rhythm_guitar.intro.intro import RGuitarIntro

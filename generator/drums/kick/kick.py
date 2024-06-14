@@ -1,4 +1,3 @@
-import velocity
 import random
 
 

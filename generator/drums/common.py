@@ -1,5 +1,5 @@
 import random
-import velocity
+from misc import velocity
 
 allowed_drums_for_fills = [38, 41, 43, 45, 47, 48]
 openers = [28, 31, 49, 57]

@@ -2,7 +2,7 @@ import random
 from rhythm_guitar import common_stuff as common
 from drums.verse.pedal_tone_riff import DrumsPedalToneRiffVerse as Drums
 from bass.verse.bass_verse import *
-import velocity
+from misc import velocity
 
 SCALES = {
     "MINOR_SCALE": [2, 1, 2, 2, 1, 2, 2],

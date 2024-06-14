@@ -1,7 +1,7 @@
 import random
 
 import drums.common
-import velocity
+from misc import velocity
 from drums.intro.open0_drum_fill import DrumsIntoOpen0DrumFill as Drums
 from bass.intro.intro import BassIntoOpen0DrumFill as Bass
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar

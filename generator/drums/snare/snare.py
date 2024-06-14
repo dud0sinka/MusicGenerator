@@ -1,6 +1,6 @@
 import random
 
-import velocity
+from misc import velocity
 
 
 def should_break(i, bars, repetition, fill_flag):
