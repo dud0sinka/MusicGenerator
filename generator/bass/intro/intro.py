@@ -1,7 +1,4 @@
 class BassIntoOpen0DrumFill:
-    """
-        A class to generate a bass into of "open 0 drum fill" type.
-    """
     def __init__(self, root_note, file, start_pos=0):
         self.root_note = root_note
         self.file = file

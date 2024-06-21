@@ -86,26 +86,32 @@ class DrumsDefaultMelodicBreakdown:
     def generate_kick_and_snare(self, repetition: int, bars: int, kick_list: List[int], fill_flag: int = 0) -> Tuple[str, str]:
         kick_variation = self.choose_kick_variation(repetition)
         snare_variation = ""
+
         if kick_variation == "default":
             self.kicks_generated.extend(
                 default_kick(repetition, bars, kick_list, self.kicks_generated, fill_flag))
             snare_variation = random.choice(snare_variations)
+
         if kick_variation == "4_on_the_floor":
             self.kicks_generated.extend(
                 self.kick.four_on_the_floor(repetition, bars, fill_flag))
             snare_variation = "step"
+
         if kick_variation == "double_bass":
             self.kicks_generated.extend(
                 self.kick.double_bass(repetition, bars, fill_flag))
             snare_variation = random.choice(snare_variations)
+
         if kick_variation == "8th_kicks":
             self.kicks_generated.extend(
                 self.kick.eighth_kicks(repetition, bars, fill_flag))
             snare_variation = random.choice(snare_variations)
+
         if kick_variation == "2_on_the_floor":
             self.kicks_generated.extend(
                 self.kick.two_on_the_floor(repetition, bars, fill_flag))
             snare_variation = "half-step"
+
         return kick_variation, snare_variation
 
     def insert_snare(self, repetition, bars, file, snare_variation, fill_flag=0):

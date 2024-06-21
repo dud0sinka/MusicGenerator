@@ -11,22 +11,6 @@ def create_bass_note(note):
     }
 
 
-"""
-    A class to generate bass notes based on given guitar notes, applying specific pitch adjustments.
-
-    Methods:
-    -------
-    copy_guitar(file):
-        Generates bass notes from guitar notes, applies transformations, and writes to a file.
-    should_skip(note):
-        Determines if a guitar note should be skipped based on specific conditions.
-    check_for_the_same_positions():
-        Removes fifths or overlapping notes from the generated bass guitar notes based on position.
-    write(file):
-        Writes the generated bass guitar notes to a specified file.
-"""
-
-
 class BassDefaultMelodicBreakdown:
     def __init__(self, guitar_notes):
         self.bass_notes = []

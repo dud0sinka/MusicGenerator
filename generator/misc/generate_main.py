@@ -37,7 +37,7 @@ def generate(r_gtr_MIDI, dr_MIDI, bass_MIDI, l_gtr_MIDI, amb_MIDI) -> None:
     song.start_pos = position
 
     # Generate second verse section
-    position = song.generate_verse(2)
+    position = song.generate_verse(random.choice([2, 4]))
     song.start_pos = position
 
     # Generate second pre-chorus section optionally

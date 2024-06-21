@@ -64,10 +64,12 @@ class Kick:
             if position == 0.75:
                 kicks.append(i + bars * 4 * repetition + 1.5 + self.start_pos)
                 kick_after_snare_chance = 1
+
         if kick_after_snare_chance < 0.15:
             position = random.choice(available_positions)
             kicks.append(i + bars * 4 * repetition + position + self.start_pos)
             available_positions.remove(position)
+
         if kick_after_snare_chance < 0.1:
             position = random.choice(available_positions)
             kicks.append(i + bars * 4 * repetition + position + self.start_pos)

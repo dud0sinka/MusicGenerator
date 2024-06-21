@@ -54,18 +54,21 @@ class GenerateSong:
 
             return pos
         elif self.pre_chorus_variation == "rest":
-            self.dr_MIDI.addNote(0, 0, 36, self.start_pos, 0.25, velocity.main_velocity())
-            self.dr_MIDI.addNote(0, 0, 38, self.start_pos, 0.25, velocity.main_velocity())
-            self.dr_MIDI.addNote(0, 0, 41, self.start_pos, 0.25, velocity.main_velocity())
-            self.r_gtr_MIDI.addNote(0, 0, self.root_note, self.start_pos, 1.5, velocity.main_velocity())
-            root = self.root_note
-            if root <= 33:
-                root += 12
-            self.bass_MIDI.addNote(0, 0, root, self.start_pos, 1.5, velocity.main_velocity())
+            self.pre_chorus_rest_variation()
 
             return self.start_pos + 4
         elif self.pre_chorus_variation == "none":
             return self.start_pos
+
+    def pre_chorus_rest_variation(self):
+        self.dr_MIDI.addNote(0, 0, 36, self.start_pos, 0.25, velocity.main_velocity())
+        self.dr_MIDI.addNote(0, 0, 38, self.start_pos, 0.25, velocity.main_velocity())
+        self.dr_MIDI.addNote(0, 0, 41, self.start_pos, 0.25, velocity.main_velocity())
+        self.r_gtr_MIDI.addNote(0, 0, self.root_note, self.start_pos, 1.5, velocity.main_velocity())
+        root = self.root_note
+        if root <= 33:
+            root += 12
+        self.bass_MIDI.addNote(0, 0, root, self.start_pos, 1.5, velocity.main_velocity())
 
     def generate_chorus(self) -> float:
         fill_size = random.choices([0, 0.5, 1, 2], weights=[4, 1, 1, 1], k=1)

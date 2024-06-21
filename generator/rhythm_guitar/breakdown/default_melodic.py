@@ -144,17 +144,7 @@ class RGuitarDefaultMelodicBreakdown:
             else:
                 continue
 
-            current_duration = self.randomize_duration(position)  # generate duration
-            if self.consecutive_16ths % 2 != 0 and current_duration != 0.25:  # prevent singular 16th notes
-                current_duration = 0.25
-            if current_duration == 0.25:
-                self.consecutive_16ths += 1
-            else:
-                self.consecutive_16ths = 0
-
-            self.palm_mute(bar, position + self.start_pos, current_duration)
-
-            current_note = self.insert_notes(bar, position + self.start_pos, current_duration, root_note)
+            current_duration, current_note = self.choose_duration_pm_pitch(bar, position, root_note)
             self.root_notes_generated.append(current_note)
             note = {  # save a note with the following parameters to the history of generated notes
                 "pitch": current_note,
@@ -168,13 +158,25 @@ class RGuitarDefaultMelodicBreakdown:
             self.recent_note = current_note
             self.recent_duration = current_duration
 
+    def choose_duration_pm_pitch(self, bar, position, root_note):
+        current_duration = self.randomize_duration(position)  # generate duration
+        if self.consecutive_16ths % 2 != 0 and current_duration != 0.25:  # prevent singular 16th notes
+            current_duration = 0.25
+        if current_duration == 0.25:
+            self.consecutive_16ths += 1
+        else:
+            self.consecutive_16ths = 0
+        self.palm_mute(bar, position + self.start_pos, current_duration)
+        current_note = self.insert_notes(bar, position + self.start_pos, current_duration, root_note)
+        return current_duration, current_note
+
     def write_to_file(self, file):
         for note in self.notes_generated:
             file.addNote(0, 0, note["pitch"], note["position"], note["duration"], velocity.main_velocity())
 
     def generate_lead(self, lead_file, number_of_bars, repetitions):
         progression = [0, 0, 0, 0] if self.progression is None else self.progression
-        lead = Guitar(self.start_pos, self.ROOT_NOTE, progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True)
+        Guitar(self.start_pos, self.ROOT_NOTE, progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True)
         return
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
@@ -211,25 +213,20 @@ class RGuitarDefaultMelodicBreakdown:
 
     def copy_palm_mutes_to_repetitions(self, current_repeat, notes_to_repeat,
                                        ending_position):  # copying palm mutes sometimes
-        # causes exceptions i cant find the reason for; hence a separate function
-        if current_repeat in [1, 5]:
-            for pm in notes_to_repeat:  # copy to 1 repetition
-                if pm["pitch"] in [12, 14]:
-                    if pm["position"] < 11.925 + self.start_pos:
-                        self.notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
-                                                     "position": pm["position"] + ending_position * current_repeat})
-        elif current_repeat in [2, 4, 6]:
-            for pm in notes_to_repeat:  # copy to 2 repetition
-                if pm["pitch"] in [12, 14]:
-                    if 0.25 < pm["position"] < 15.25 + self.start_pos:
-                        self.notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
-                                                     "position": pm["position"] + ending_position * current_repeat})
-        elif current_repeat in [3, 7]:
-            for pm in notes_to_repeat:  # copy to 3 repetition
-                if pm["pitch"] in [12, 14]:
-                    if pm["position"] < 7.925 + self.start_pos:
-                        self.notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
-                                                     "position": pm["position"] + ending_position * current_repeat})
+        # causes exceptions I cant find the reason for; hence a separate function
+        if current_repeat == 1:
+            self.handle_pms_in_different_reps(current_repeat, ending_position, notes_to_repeat, 11.925)
+        elif current_repeat == 2:
+            self.handle_pms_in_different_reps(current_repeat, ending_position, notes_to_repeat, 15.25)
+        elif current_repeat == 3:
+            self.handle_pms_in_different_reps(current_repeat, ending_position, notes_to_repeat, 7.925)
+
+    def handle_pms_in_different_reps(self, current_repeat, ending_position, notes_to_repeat, pos):
+        for pm in notes_to_repeat:  # copy to 1 repetition
+            if pm["pitch"] in [12, 14]:
+                if pm["position"] < pos + self.start_pos:
+                    self.notes_generated.append({"pitch": pm["pitch"], "duration": pm["duration"],
+                                                 "position": pm["position"] + ending_position * current_repeat})
 
     def create_kick_pattern(self):
         for note in self.notes_generated:  # default breakdown mode
@@ -239,13 +236,11 @@ class RGuitarDefaultMelodicBreakdown:
             if note["position"] == self.start_pos and note["position"] not in self.kick:  # default mode
                 self.kick.append(self.start_pos)
                 continue
-            if note["pitch"] > ROOT_NOTE_HIGHEST and note[
-                "position"] not in self.kick:  # optional kick for high notes
+            if note["pitch"] > ROOT_NOTE_HIGHEST and note["position"] not in self.kick:  # optional kick for high notes
                 if random.random() < 0.4:
                     self.kick.append(note["position"])
                 continue
-            if ROOT_NOTE_LOWEST <= note["pitch"] <= ROOT_NOTE_HIGHEST and note[
-                "position"] not in self.kick:
+            if ROOT_NOTE_LOWEST <= note["pitch"] <= ROOT_NOTE_HIGHEST and note["position"] not in self.kick:
                 self.kick.append(
                     note["position"])  # remembering guitar accents to pass to the kick drum
 
@@ -287,47 +282,42 @@ class RGuitarDefaultMelodicBreakdown:
         if self.type2:
             return -1
         rest_probability = random.random() if self.progression is None else 1  # no rests needed for a progression sect.
-        if rest_probability < 0.02 * len(self.root_notes_generated) and self.root_notes_generated[  # half note rest
-            -1] == self.ROOT_NOTE and position % 1 == 0 and \
-                self.recent_note == self.ROOT_NOTE and self.recent_duration > 0.5:
-            position += 2
-            self.root_notes_generated.clear()
-            return position
-        if rest_probability < 0.05 * len(self.root_notes_generated) and self.root_notes_generated[  # quarter note rest
-            -1] == self.ROOT_NOTE and position % 0.5 == 0 and \
-                self.recent_note == self.ROOT_NOTE and self.recent_duration > 0.5:
-            position += 1
-            self.root_notes_generated.clear()
-            return position
-        if rest_probability < 0.05 * len(self.root_notes_generated) and self.root_notes_generated[  # 8th note rest
-            -1] == self.ROOT_NOTE and position % 0.5 == 0 and \
-                self.recent_note == self.ROOT_NOTE and self.recent_duration >= 0.5:
-            position += 0.5
-            self.root_notes_generated.clear()
-            return position
+        if self.rest_condition(position, rest_probability, 0.02, 1):  # half note rest
+            return self.rest_position_offset(position, 2)
+        if self.rest_condition(position, rest_probability, 0.05, 0.5):  # quarter note rest
+            return self.rest_position_offset(position, 1)
+        if self.rest_condition(position, rest_probability, 0.05, 0.5):  # 8th note rest
+            return self.rest_position_offset(position, 0.5)
         return -1
+
+    def rest_position_offset(self, position, value):
+        position += value
+        self.root_notes_generated.clear()
+        return position
+
+    def rest_condition(self, position, rest_probability, value, pos):
+        return rest_probability < value * len(self.root_notes_generated) and self.root_notes_generated[
+            -1] == self.ROOT_NOTE and position % pos == 0 and \
+               self.recent_note == self.ROOT_NOTE and self.recent_duration > 0.5
 
     def diversify_notes(self, current_note, bar, position, current_duration):
         chance = random.random()
         interval = self.interval_randomizer(current_note)
 
         if current_duration == 1:
-            if chance < 0.4:
-                note = {
-                    "pitch": interval,
-                    "duration": current_duration - 0.5,
-                    "position": bar * 4 + position + 0.5
-                }
-                self.notes_generated.append(note)
+            self.insert_diversified_note(bar, chance, current_duration, interval, position, 0.4)
 
         if current_duration == 2:
-            if chance < 0.66:
-                note = {
-                    "pitch": interval,
-                    "duration": current_duration - 1,
-                    "position": bar * 4 + position + 1
-                }
-                self.notes_generated.append(note)
+            self.insert_diversified_note(bar, chance, current_duration, interval, position, 0.66)
+
+    def insert_diversified_note(self, bar, chance, current_duration, interval, position, chance_threshold):
+        if chance < chance_threshold:
+            note = {
+                "pitch": interval,
+                "duration": current_duration - 0.5,
+                "position": bar * 4 + position + 0.5
+            }
+            self.notes_generated.append(note)
 
     def interval_randomizer(self, current_note):
         interval = INTERVALS[random.choice(list(INTERVALS.keys()))]
@@ -339,24 +329,20 @@ class RGuitarDefaultMelodicBreakdown:
 
     def palm_mute(self, bar, position, duration):
         if duration <= 0.5:
-            if bar == 0 and position == 0:
-                # so that palm muting the very first note works
-                pm = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position}
-                self.notes_generated.append(pm)
-            else:
-                pm = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.05}
-                self.notes_generated.append(pm)
-
-            pm = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2}
-            self.notes_generated.append(pm)
+            self.palm_mute_12_14(bar, position)
 
         else:  # palm mute a long note with a certain chance
             palm_mute_chance = random.random()
             if palm_mute_chance < 0.4 and position != 0:
-                pm_on = {"pitch": 14, "duration": duration / 4, "position": bar * 4 + position - 0.05}
-                self.notes_generated.append(pm_on)
-                pm_off = {"pitch": 12, "duration": duration / 4, "position": bar * 4 + position + duration / 2}
-                self.notes_generated.append(pm_off)
+                self.palm_mute_12_14(bar, position)
+
+    def palm_mute_12_14(self, bar, position):
+        self.insert_palm_mute_note(bar, position, 14)
+        self.insert_palm_mute_note(bar, position, 12, 0.25)
+
+    def insert_palm_mute_note(self, bar, position, pitch, offset: float = 0.0):
+        pm = {"pitch": pitch, "duration": 0.5 / 4, "position": bar * 4 + position - 0.125 + offset}
+        self.notes_generated.append(pm)
 
     def check_for_palm_mute(self, position, pitch, tolerance=0.075):
         for note in self.notes_generated:
