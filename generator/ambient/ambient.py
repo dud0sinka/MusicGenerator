@@ -4,6 +4,9 @@ from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar
 
 
 def generate(amb_file, number_of_bars, repetitions, start_pos, root, scale, is_lead, amb_guarantee=False):
+    """
+    This function generates an optional ambient guitar section for a song.
+    """
     if is_lead:
         repetitions //= 2
     else:
@@ -15,4 +18,3 @@ def generate(amb_file, number_of_bars, repetitions, start_pos, root, scale, is_l
         Guitar(start_pos, root, [0, 0, 0, 0], scale).generate(amb_file, None, None,
                                                               number_of_bars, repetitions,
                                                               False, False, True)
-

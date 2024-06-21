@@ -25,7 +25,7 @@ class GenerateSong:
         self.pre_chorus_variation = ""
         self.pre_chorus_variations = ["normal", "rest", "none"]
 
-    def generate_intro(self):
+    def generate_intro(self) -> float:
         intro = RGuitarIntro(random.randint(29, 38), self.start_pos)
         intro_bars = random.choice([2, 4])
 
@@ -34,17 +34,17 @@ class GenerateSong:
 
         return pos
 
-    def generate_verse(self, repetitions=4):
+    def generate_verse(self, repetitions=4) -> float:
         self.verse = RGuitarPedalToneRiff(self.start_pos, self.root_note)
         pos = self.verse.generate(self.r_gtr_MIDI, self.dr_MIDI, self.bass_MIDI, 4, repetitions)
 
         return pos
 
-    def choose_pre_chorus(self):
+    def choose_pre_chorus(self) -> None:
         weight = 0.5 if self.pre_chorus_variation == "normal" else 4
         self.pre_chorus_variation = random.choices(self.pre_chorus_variations, weights=[weight, 2, 1], k=1)[0]
 
-    def generate_pre_chorus(self):
+    def generate_pre_chorus(self) -> float:
         self.choose_pre_chorus()
 
         if self.pre_chorus_variation == "normal":
@@ -67,7 +67,7 @@ class GenerateSong:
         elif self.pre_chorus_variation == "none":
             return self.start_pos
 
-    def generate_chorus(self):
+    def generate_chorus(self) -> float:
         fill_size = random.choices([0, 0.5, 1, 2], weights=[4, 1, 1, 1], k=1)
         self.start_pos = common.choose_and_generate_fill(self.start_pos, fill_size[0], self.dr_MIDI)
         # optional fill before chorus
@@ -77,24 +77,24 @@ class GenerateSong:
 
         return pos
 
-    def generate_post_chorus(self):
+    def generate_post_chorus(self) -> float:
         pos = self.generate_pre_chorus()
         self.pre_chorus_variation = None
 
         return pos
 
-    def generate_pre_breakdown(self):
+    def generate_pre_breakdown(self) -> float:
         return pre_breakdown.generate(self.r_gtr_MIDI, self.dr_MIDI, self.bass_MIDI,
                                       self.amb_MIDI, self.l_gtr_MIDI, self.start_pos,
                                       self.root_note, self.chorus.progression, self.chorus.current_scale)
 
-    def generate_breakdown(self):
+    def generate_breakdown(self) -> float:
         breakdown = RGuitarDefaultMelodicBreakdown(self.start_pos, self.root_note, None, None, self.l_gtr_MIDI,
                                                    self.amb_MIDI)
         pos = breakdown.generate(self.r_gtr_MIDI, self.dr_MIDI, self.bass_MIDI, 4, 4)
 
         return pos
 
-    def generate_outro(self):
+    def generate_outro(self) -> None:
         rhythm_guitar.outro.outro.generate(self.r_gtr_MIDI, self.dr_MIDI, self.bass_MIDI, self.start_pos,
                                                    self.root_note)

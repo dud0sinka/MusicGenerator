@@ -1,3 +1,32 @@
+def create_bass_note(note):
+    pitch = note["pitch"]
+    if pitch > 48:
+        pitch -= 12
+    elif 29 <= pitch < 33:
+        pitch += 12
+    return {
+        "pitch": pitch,
+        "duration": note["duration"],
+        "position": note["position"]
+    }
+
+
+"""
+    A class to generate bass notes based on given guitar notes, applying specific pitch adjustments.
+
+    Methods:
+    -------
+    copy_guitar(file):
+        Generates bass notes from guitar notes, applies transformations, and writes to a file.
+    should_skip(note):
+        Determines if a guitar note should be skipped based on specific conditions.
+    check_for_the_same_positions():
+        Removes fifths or overlapping notes from the generated bass guitar notes based on position.
+    write(file):
+        Writes the generated bass guitar notes to a specified file.
+"""
+
+
 class BassDefaultMelodicBreakdown:
     def __init__(self, guitar_notes):
         self.bass_notes = []
@@ -7,8 +36,9 @@ class BassDefaultMelodicBreakdown:
 
     def copy_guitar(self, file):
         for note in self.guitar_notes:
-            if 92 <= note["pitch"] <= 95:
+            if self.should_skip(note):
                 continue
+
             if note["duration"] == 0.25:
                 self.last_16th_note = note["position"]
 
@@ -18,49 +48,29 @@ class BassDefaultMelodicBreakdown:
             if 29 <= note["pitch"] <= 38:
                 self.current_low_note_position = note["position"]
 
-            if note["pitch"] == 14 or note["pitch"] == 12:
-                continue
-
-            if note["pitch"] > 48 and note["duration"] <= 0.5 and note["position"] != self.last_16th_note + 0.25:
-                continue
-
-            if note["pitch"] > 48:
-                bass_note = {
-                    "pitch": note["pitch"] - 12,
-                    "duration": note["duration"],
-                    "position": note["position"]
-                }
-                self.bass_notes.append(bass_note)
-                continue
-
-            if 29 <= note["pitch"] < 33:
-                bass_note = {
-                    "pitch": note["pitch"] + 12,
-                    "duration": note["duration"],
-                    "position": note["position"]
-                }
-                self.bass_notes.append(bass_note)
-            else:
-                bass_note = {
-                    "pitch": note["pitch"],
-                    "duration": note["duration"],
-                    "position": note["position"]
-                }
-                self.bass_notes.append(bass_note)
+            bass_note = create_bass_note(note)
+            self.bass_notes.append(bass_note)
 
         self.bass_notes = self.check_for_the_same_positions()
         self.write(file)
 
-    def check_for_the_same_positions(self):
-        filtered_notes = []
+    def should_skip(self, note):
+        if 92 <= note["pitch"] <= 95:
+            return True
+        if note["pitch"] in (14, 12):
+            return True
+        if note["pitch"] > 48 and note["duration"] <= 0.5 and note["position"] != self.last_16th_note + 0.25:
+            return True
+        return False
 
-        for i in range(len(self.bass_notes) - 1):
+    def check_for_the_same_positions(self):
+        filtered_notes = [self.bass_notes[0]]
+
+        for i in range(1, len(self.bass_notes)):
             current_note = self.bass_notes[i]
-            next_note = self.bass_notes[i + 1]
-            if current_note["position"] != next_note["position"]:
+            if current_note["position"] != filtered_notes[-1]["position"]:
                 filtered_notes.append(current_note)
 
-        filtered_notes.append(self.bass_notes[-1])
         return filtered_notes
 
     def write(self, file):

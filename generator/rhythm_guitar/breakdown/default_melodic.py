@@ -1,6 +1,6 @@
 from misc import velocity
 import random
-from rhythm_guitar import common_stuff as common
+from rhythm_guitar import common as common
 from drums.breakdown.default_melodic import DrumsDefaultMelodicBreakdown as Drums
 from bass.breakdown.bass_default_breakdown import BassDefaultMelodicBreakdown as Bass
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar
@@ -25,9 +25,53 @@ INTERVALS = {
     "sixth": 5,
 }
 
+"""
+ A class to generate melodic guitar breakdowns.
 
-# TODO: spice-up parts (octaves, runs, regenerate, chords etc.)
-# TODO: different types of breakdowns (this one is default / melodic)
+ Attributes:
+ ----------
+ start_pos : float
+     The starting position where generation begins.
+ root_note : int
+     The root note used as a basis for generation.
+ progression : list or None, optional
+     A list representing a musical progression if applicable (default is None).
+ scale : list or None, optional
+     A list defining the musical scale used for generation (default is None).
+ lead_file : str or None, optional
+     File path for storing generated lead guitar parts (default is None).
+ amb_file : str or None, optional
+     File path for storing generated ambient sounds (default is None).
+
+ Methods:
+ -------
+ generate(gtr_file, drum_file, bass_file, number_of_bars, repetitions, outside_flag=False):
+     Generates melodic guitar breakdowns along with drums, bass, and optionally lead and ambient guitars.
+ generate_bar(bar, root_note=None):
+     Generates a single bar based on the specified parameters.
+ write_to_file(file):
+     Writes the generated notes to a specified file.
+ generate_lead(lead_file, number_of_bars, repetitions):
+     Generates lead guitar parts based on the specified parameters.
+ create_repetitions(ending_position, repetitions, number_of_bars):
+     Creates repetitions of the generated notes.
+ create_kick_pattern():
+     Generates a kick drum pattern based on the generated guitar parts.
+ randomize_duration(position):
+     Randomizes the duration of musical notes based on their position in the bar.
+ insert_notes(bar, position, current_duration, root_note=None):
+     Inserts musical notes into the generated sequence based on specified conditions.
+ insert_rests(position):
+     Inserts rests into the musical sequence based on specified conditions.
+ diversify_notes(current_note, bar, position, current_duration):
+     Diversifies the notes by adding intervals or variations.
+ interval_randomizer(current_note):
+     Randomly selects an interval for note variation.
+ palm_mute(bar, position, duration):
+     Inserts palm-muted notes into the sequence based on specified conditions.
+ check_for_palm_mute(position, pitch, tolerance=0.075):
+     Checks if a palm-muted note exists at a specific position and pitch.
+ """
 
 
 class RGuitarDefaultMelodicBreakdown:

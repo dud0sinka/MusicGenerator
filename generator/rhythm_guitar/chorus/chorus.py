@@ -1,16 +1,16 @@
 import random
-from rhythm_guitar import common_stuff as common
+from rhythm_guitar import common as common
 from drums.verse.pedal_tone_riff import DrumsPedalToneRiffVerse as Drums
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar
 from bass.verse.bass_verse import *
 from misc import velocity
+from rhythm_guitar.common import handle_2nd_repetition, handle_unchanged_parts_in_reps
 
 SCALES = {
     "MINOR_SCALE": [2, 1, 2, 2, 1, 2, 2],
     "PHRYGIAN_MODE": [1, 2, 2, 2, 1, 2, 2]
 }
 
-# TODO: second repeat is either stuff from todo in breakdown or just different random notes
 
 CHORD_PROGRESSIONS = {  # the numbers are the intervals to add to the current root note
     "chorus0": [0, 0, 5, 4],  # 0 0 8 7
@@ -35,7 +35,6 @@ class RGuitarChorus:
         self.bass_notes = []
 
     def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_file):
-        # TODO: drum fill before chorus
         ending_position = 0
 
         lets_choose_a_scale = common.choose_scale(SCALES)
@@ -61,7 +60,7 @@ class RGuitarChorus:
         return ending_position + self.start_pos
 
     def generate_lead(self, lead_file, number_of_bars, repetitions):
-        lead = Guitar(self.start_pos, self.ROOT_NOTE, self.progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True, True)
+        Guitar(self.start_pos, self.ROOT_NOTE, self.progression, self.current_scale).generate(lead_file, None, None, number_of_bars, repetitions, True, True)
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
         end_pos_to_return = ending_position
@@ -99,22 +98,10 @@ class RGuitarChorus:
                         self.generate_bar(15, 4, 3)
                         break
                     else:
-                        note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                          "position": note["position"] + ending_position * current_repeat}
-                        self.notes_generated.append(note_to_repeat)
-
-                        if note_to_repeat["pitch"] > 14 and not any(
-                                bass_note["position"] == note_to_repeat["position"] for bass_note in self.bass_notes):
-                            self.bass_notes.append(note_to_repeat)
-
+                        handle_unchanged_parts_in_reps(self.notes_generated, self.bass_notes, current_repeat,
+                                                       ending_position, note)
                 else:
-                    note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                      "position": note["position"] + ending_position * current_repeat}
-                    self.notes_generated.append(note_to_repeat)
-
-                    if note_to_repeat["pitch"] > 14 and not any(
-                            bass_note["position"] == note_to_repeat["position"] for bass_note in self.bass_notes):
-                        self.bass_notes.append(note_to_repeat)
+                    handle_2nd_repetition(self.notes_generated, self.bass_notes, current_repeat, ending_position, note)
 
             self.progression[-1] = last_root_note_of_progression
             end_pos_to_return += number_of_bars * 4
@@ -136,33 +123,36 @@ class RGuitarChorus:
             current_note = current_root_note
             if current_note < 35:
                 current_note += 12
-            note = {  # save a note with the following parameters to the history of generated notes
-                "pitch": current_note,
-                "duration": 1,
-                "position": bar * 4 + position + self.start_pos
-            }
-            note_fifth = {
-                "pitch": current_note + 7,
-                "duration": 1,
-                "position": bar * 4 + position + self.start_pos
-            }
-            note_octave = {
-                "pitch": current_note + 12,
-                "duration": 1,
-                "position": bar * 4 + position + self.start_pos
-            }
-            bass_note = current_note if current_note > 32 else current_note + 12
-            bass_note = {  # bass note
-                "pitch": bass_note,
-                "duration": 1,
-                "position": bar * 4 + position + self.start_pos
-            }
-            self.notes_generated.append(note)
-            self.notes_generated.append(note_fifth)
-            self.notes_generated.append(note_octave)
-            self.bass_notes.append(bass_note)
+            self.power_chord_and_bass(bar, current_note, position)
 
             position += 1
+
+    def power_chord_and_bass(self, bar, current_note, position):
+        note = {  # save a note with the following parameters to the history of generated notes
+            "pitch": current_note,
+            "duration": 1,
+            "position": bar * 4 + position + self.start_pos
+        }
+        note_fifth = {
+            "pitch": current_note + 7,
+            "duration": 1,
+            "position": bar * 4 + position + self.start_pos
+        }
+        note_octave = {
+            "pitch": current_note + 12,
+            "duration": 1,
+            "position": bar * 4 + position + self.start_pos
+        }
+        bass_note = current_note if current_note > 32 else current_note + 12
+        bass_note = {  # bass note
+            "pitch": bass_note,
+            "duration": 1,
+            "position": bar * 4 + position + self.start_pos
+        }
+        self.notes_generated.append(note)
+        self.notes_generated.append(note_fifth)
+        self.notes_generated.append(note_octave)
+        self.bass_notes.append(bass_note)
 
     def set_root_note(self, bar):  # choose current root note for pedal tone riffs
         return self.current_scale[self.progression[bar]]

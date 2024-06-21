@@ -1,7 +1,7 @@
 import random
 
 
-def default_kick(repetition, bars, kick_list, start_pos, kicks_generated,
+def default_kick(repetition, bars, kick_list, kicks_generated,
                  fill_flag=0):  # follows the pattern of the guitar
     for i in kick_list:
         j = kick_list[0]
@@ -13,6 +13,12 @@ def default_kick(repetition, bars, kick_list, start_pos, kicks_generated,
     return kicks_generated
 
 
+def break_for_fill(i, fill_flag, bars, repetition):
+    return (fill_flag == 1 and i == bars * 4 - 4) or (
+            fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
+           (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4)
+
+
 class Kick:
     def __init__(self, start_pos):
         self.start_pos = start_pos
@@ -20,9 +26,7 @@ class Kick:
     def four_on_the_floor(self, repetition, bars, fill_flag=0, chorus=False):
         kicks = []
         for i in range(0, bars * 4):
-            if (fill_flag == 1 and i == bars * 4 - 4) or (
-                    fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
-                    (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4):
+            if break_for_fill(i, fill_flag, bars, repetition):
                 break
             if i % 4 == 0:
                 kicks.append(i + bars * 4 * repetition + self.start_pos)
@@ -32,7 +36,8 @@ class Kick:
 
     def kick_bursts_before_snare(self, repetition, bars, i, kicks, variation=4, chorus=False):
         burst_chance = random.random()
-        if chorus: burst_chance -= 0.3
+        if chorus:
+            burst_chance -= 0.3
 
         if burst_chance < 0.4 / variation:
             if variation == 2:
@@ -71,9 +76,7 @@ class Kick:
     def double_bass(self, repetition, bars, fill_flag=0):
         kicks = []
         for i in range(0, bars * 4):
-            if (fill_flag == 1 and i == bars * 4 - 4) or (
-                    fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
-                    (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4):
+            if break_for_fill(i, fill_flag, bars, repetition):
                 break
             j = 0
             for _ in range(4):
@@ -84,9 +87,7 @@ class Kick:
     def eighth_kicks(self, repetition, bars, fill_flag=0, blast_flag=0, chorus=False):
         kicks = []
         for i in range(0, bars * 4):
-            if (fill_flag == 1 and i == bars * 4 - 4) or (
-                    fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
-                    (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4):
+            if break_for_fill(i, fill_flag, bars, repetition):
                 break
             j = 0
             for _ in range(2):
@@ -99,9 +100,7 @@ class Kick:
     def two_on_the_floor(self, repetition, bars, fill_flag=0):
         kicks = []
         for i in range(0, bars * 4):
-            if (fill_flag == 1 and i == bars * 4 - 4) or (
-                    fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
-                    (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4):
+            if break_for_fill(i, fill_flag, bars, repetition):
                 break
             if i % 8 == 0:
                 kicks.append(i + bars * 4 * repetition + self.start_pos)
@@ -112,9 +111,7 @@ class Kick:
     def trr_trr(self, repetition, bars, fill_flag=0):
         kicks = []
         for i in range(0, bars * 4):
-            if (fill_flag == 1 and i == bars * 4 - 4) or (
-                    fill_flag == 2 and i >= bars * 4 - 6 and repetition in [3, 7]) or \
-                    (fill_flag == 3 and i == bars * 4 - 2) or (fill_flag == 4 and i == bars * 4 - 4):
+            if break_for_fill(i, fill_flag, bars, repetition):
                 break
             if i % 1 == 0:
                 kicks.append(i + bars * 4 * repetition + self.start_pos + 0.5)

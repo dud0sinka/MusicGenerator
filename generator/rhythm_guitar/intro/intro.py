@@ -5,11 +5,12 @@ from misc import velocity
 from drums.intro.open0_drum_fill import DrumsIntoOpen0DrumFill as Drums
 from bass.intro.intro import BassIntoOpen0DrumFill as Bass
 from rhythm_guitar.verse.pedal_tone_riff import RGuitarPedalToneRiff as Guitar
-from rhythm_guitar import common_stuff as common
+from rhythm_guitar import common as common
 import rhythm_guitar.verse.pedal_tone_riff as guitar
+from midiutil.MidiFile import MIDIFile
 
 
-def slide_or_dead_notes(gtr_file, bars, start_pos=0):
+def slide_or_dead_notes(gtr_file: MIDIFile, bars: int, start_pos=0) -> bool:
     if random.random() > 0.5:
         gtr_file.addNote(0, 0, 102, start_pos + bars * 4 - 2, 1, velocity.main_velocity())  # slide
         gtr_file.addNote(0, 0, 101, start_pos + bars * 4 - 1, 1, velocity.main_velocity())
@@ -22,7 +23,7 @@ def slide_or_dead_notes(gtr_file, bars, start_pos=0):
         return True
 
 
-def choose_intro():
+def choose_intro() -> str:
     intros = ["open0_drum_fill", "none", "drum_fill", "ambience"]
     return random.choice(intros)
 
@@ -37,7 +38,7 @@ class RGuitarIntro:
     def get_root(self):
         return self.ROOT_NOTE
 
-    def generate(self, gtr_file, drum_file, bass_file, bars, amb_file=None):
+    def generate(self, gtr_file: MIDIFile, drum_file: MIDIFile, bass_file: MIDIFile, bars: int, amb_file: MIDIFile = None) -> int:
         if self.intro == "open0_drum_fill":
             root_copy = self.ROOT_NOTE if self.ROOT_NOTE > 34 else self.ROOT_NOTE + 12
 

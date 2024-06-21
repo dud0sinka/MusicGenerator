@@ -22,7 +22,7 @@ class DrumsIntoOpen0DrumFill:
             else:
                 common.choose_and_generate_fill(6 + self.start_pos, 0.5 - snare_offset, self.file)
                 common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)
-        if bars == 4:
+        elif bars == 4:
             if random.random() > 0.5:  # randomize where the fill begins
                 common.choose_and_generate_fill(8 + self.start_pos, 2 - snare_offset, self.file)
                 common.generate_snare_fill(bars * 4 - 2 + self.start_pos, snare_offset, self.file)

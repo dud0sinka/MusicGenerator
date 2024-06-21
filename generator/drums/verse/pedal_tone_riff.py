@@ -8,7 +8,6 @@ kick_variations = ["double_bass", "8th_kicks", "trr_trr"]
 kick_weights = [2, 4, 4]  # Weights for kick variations, double bass has lower weight
 cymbal_variations = ["double_time", "step"]
 
-# TODO: GHOST NOTES
 
 class DrumsPedalToneRiffVerse:
     def __init__(self, start_pos, chorus=False):
@@ -29,7 +28,7 @@ class DrumsPedalToneRiffVerse:
         for repetition in range(repetitions):
             fill_flag = 0
             if bars == 4:
-                if repetition == 1 or repetition == 3:
+                if repetition in [1, 3]:
                     fill_flag = 1
             if bars == 8:
                 if 0 <= repetition <= 2:
@@ -45,7 +44,7 @@ class DrumsPedalToneRiffVerse:
             self.previous_snare = kick_snare[1]
 
             if bars == 4:
-                if repetition == 1 or repetition == 3:
+                if repetition in [1, 3]:
                     common.choose_and_generate_fill(self.start_pos + bars * 4 * repetition + bars * 3, 1, file)
 
             if bars == 8:
@@ -61,7 +60,8 @@ class DrumsPedalToneRiffVerse:
 
     def generate_kick_and_snare(self, repetition, bars, fill_flag=0):
         chorus_variations = ["double_bass", "8th_kicks", "4"]
-        kick_variation = self.choose_kick_variation() if self.chorus is False else random.choices(chorus_variations, weights=[1, 4, 2], k=1)[0]
+        kick_variation = self.choose_kick_variation() if self.chorus is False else \
+            random.choices(chorus_variations, weights=[1, 4, 2], k=1)[0]
 
         allowed_snares_for_eight_bars = snare_variations.copy()
         allowed_snare_weights = snare_weights.copy()
@@ -74,7 +74,7 @@ class DrumsPedalToneRiffVerse:
 
         snare_variation = ""
         cymbal_variation = ""
-        ###################################
+        """double bass"""
         if kick_variation == "double_bass":
             self.kicks_generated.extend(self.kick.double_bass(repetition, bars, fill_flag))
 
@@ -91,7 +91,7 @@ class DrumsPedalToneRiffVerse:
 
             if "blast" in snare_variation:
                 self.blast_count += 1
-        ###################################
+        """8ths kicks"""
         if kick_variation == "8th_kicks":
             allowed_snare_variations = snare_variations.copy()
             allowed_snare_weights = snare_weights.copy()
@@ -113,7 +113,7 @@ class DrumsPedalToneRiffVerse:
                 cymbal_variation = "step"
             elif snare_variation == "blast2":
                 cymbal_variation = "double_time"
-        ###################################
+        """trr_trr beat"""
         if kick_variation == "trr_trr":
             self.kicks_generated.extend(self.kick.trr_trr(repetition, bars, fill_flag))
             snare_variation = "double_time"
@@ -146,6 +146,11 @@ class DrumsPedalToneRiffVerse:
         variation = random.choices(kick_variations, weights=kick_weights, k=1)[0]
         return variation
 
+    def fill_break(self, fill_flag, position, pos_cmp_var, bars):
+        return (fill_flag == 1 and position == pos_cmp_var + bars * 3) or (
+                fill_flag == 3 and position == pos_cmp_var + bars * 4 - 2) or (
+                       fill_flag == 4 and position == pos_cmp_var + bars * 4 - 4)
+
     def generate_cymbals(self, repetition, bars, file, current_kick, current_snare, cymbal_var, fill_flag=0):
         allowed_cymbals = common.power_hand.copy()
 
@@ -163,9 +168,7 @@ class DrumsPedalToneRiffVerse:
             position = i + bars * 4 * repetition + self.start_pos
             pos_cmp_var = self.start_pos + bars * 4 * repetition
 
-            if (fill_flag == 1 and position == pos_cmp_var + bars * 3) or (
-                    fill_flag == 3 and position == pos_cmp_var + bars * 4 - 2) or (
-                    fill_flag == 4 and position == pos_cmp_var + bars * 4 - 4):
+            if self.fill_break(fill_flag, position, pos_cmp_var, bars):
                 break
 
             if (position % 16 == 0) or (

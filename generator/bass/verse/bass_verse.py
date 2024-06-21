@@ -2,6 +2,11 @@ def add_note(self, note):
     self.bass_notes.append(note)
 
 
+"""
+        A method that generates bass for verse sections.
+"""
+
+
 def write(file, bass_notes):
     for note in bass_notes:
         if 14 < note["pitch"] < 33:

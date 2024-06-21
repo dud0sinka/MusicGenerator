@@ -1,8 +1,9 @@
 import random
-from rhythm_guitar import common_stuff as common
+from rhythm_guitar import common as common
 from drums.verse.pedal_tone_riff import DrumsPedalToneRiffVerse as Drums
 from bass.verse.bass_verse import *
 from misc import velocity
+from rhythm_guitar.common import handle_unchanged_parts_in_reps, handle_2nd_repetition
 
 SCALES = {
     "MINOR_SCALE": [2, 1, 2, 2, 1, 2, 2],
@@ -11,7 +12,6 @@ SCALES = {
     "DORIAN_MODE": [2, 1, 2, 2, 2, 1, 2],
 }
 
-# TODO: second repeat is either stuff from todo in breakdown or just different random notes
 
 CHORD_PROGRESSIONS = {  # the numbers are the intervals to add to the current root note
     "verse_0": [0, 0, 0, 0],  # 0 0 0 0
@@ -41,7 +41,7 @@ class RGuitarPedalToneRiff:
         self.number_of_bars = number_of_bars
         self.repetitions = repetitions
 
-    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False, chorus_flag=False, amb_flag=False):
+    def generate(self, gtr_file, drum_file, bass_file, number_of_bars, repetitions, lead_flag=False, chorus_flag=False, amb_flag=False) -> None:
         if lead_flag and chorus_flag:
             self.type2_riff = False
 
@@ -70,6 +70,7 @@ class RGuitarPedalToneRiff:
         if lead_flag is False and amb_flag is False:
             Drums(self.start_pos).generate(drum_file, data)  # generate drums
             write(bass_file, self.bass_notes)  # generate bass
+
         return ending_position + self.start_pos
 
     def create_repetitions(self, ending_position, repetitions, number_of_bars):
@@ -90,11 +91,8 @@ class RGuitarPedalToneRiff:
                         self.generate_bar(7, 4, 1, 0.6)
                         break
                     else:
-                        note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                          "position": note["position"] + ending_position * current_repeat}
-                        self.notes_generated.append(note_to_repeat)
-                        if note_to_repeat["pitch"] > 14:
-                            self.bass_notes.append(note_to_repeat)
+                        handle_unchanged_parts_in_reps(self.notes_generated, self.bass_notes, current_repeat,
+                                                       ending_position, note)
 
                 elif current_repeat == 3:  # modify 3rd repeat for 4 bars
                     if random.random() < 0.25:
@@ -106,22 +104,11 @@ class RGuitarPedalToneRiff:
                         self.generate_bar(15, 4, 3, 0.6)
                         break
                     else:
-                        note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                          "position": note["position"] + ending_position * current_repeat}
-                        self.notes_generated.append(note_to_repeat)
-                        if note_to_repeat["pitch"] > 14:
-                            self.bass_notes.append(note_to_repeat)
+                        handle_unchanged_parts_in_reps(self.notes_generated, self.bass_notes, current_repeat,
+                                                       ending_position, note)
 
                 else:
-                    note_to_repeat = {"pitch": note["pitch"], "duration": note["duration"],
-                                      "position": note["position"] + ending_position * current_repeat}
-                    note_to_repeat["pitch"] = note_to_repeat["pitch"] - 12 if random.random() < 0.8 and note_to_repeat[
-                        "pitch"] > 48 else note_to_repeat[
-                        "pitch"]
-                    self.notes_generated.append(note_to_repeat)
-
-                    if note_to_repeat["pitch"] > 14:
-                        self.bass_notes.append(note_to_repeat)
+                    handle_2nd_repetition(self.notes_generated, self.bass_notes, current_repeat, ending_position, note)
 
             self.progression[-1] = last_root_note_of_progression
             end_pos_to_return += number_of_bars * 4
@@ -160,21 +147,23 @@ class RGuitarPedalToneRiff:
         position = 0
         while position < 4:
             current_note = self.insert_notes(bar, position + self.start_pos, current_root_note, high_note_multiplier)
-            note = {  # save a note with the following parameters to the history of generated notes
-                "pitch": current_note,
-                "duration": 0.5,
-                "position": bar * 4 + position + self.start_pos
-            }
-            bass_note = current_note if current_note > 32 else current_note + 12
-            bass_note = {  # bass note
-                "pitch": bass_note,
-                "duration": 0.5,
-                "position": bar * 4 + position + self.start_pos
-            }
-            self.notes_generated.append(note)
-            self.bass_notes.append(bass_note)
-
+            self.save_gtr_and_bass_notes(bar, current_note, position)
             position += 0.5
+
+    def save_gtr_and_bass_notes(self, bar, current_note, position):
+        note = {  # save a note with the following parameters to the history of generated notes
+            "pitch": current_note,
+            "duration": 0.5,
+            "position": bar * 4 + position + self.start_pos
+        }
+        bass_note = current_note if current_note > 32 else current_note + 12
+        bass_note = {  # bass note
+            "pitch": bass_note,
+            "duration": 0.5,
+            "position": bar * 4 + position + self.start_pos
+        }
+        self.notes_generated.append(note)
+        self.bass_notes.append(bass_note)
 
     def insert_notes(self, bar, position, riff_root_note, high_note_multiplier=0.0):
         if len(self.notes_generated) >= 2 - self.palm_mutes_generated and self.notes_generated[-1]["pitch"] >= \
@@ -190,22 +179,19 @@ class RGuitarPedalToneRiff:
                 current_note = random.choice(self.current_scale[7:]) if not self.type2_riff\
                     else random.choice(self.current_scale[3:10])
 
-        if (current_note == riff_root_note and not self.type2_riff) or (self.type2_riff and random.random() > 0.6):  # palm mute the root notes
-            if bar == 0 and position == 0:
-                pm = {"pitch": 14, "duration": 0.5 / 4, "position": bar * 4 + position - 0.125}
-                self.notes_generated.append(pm)
-                self.palm_mutes_generated += 1
-                # so that palm muting the very first note works
-            else:
-                pm = {"pitch": 14, "duration": 0.5 / 4, "position": bar * 4 + position - 0.125}
-                self.notes_generated.append(pm)
-                self.palm_mutes_generated += 1
-
-            pm = {"pitch": 12, "duration": 0.5 / 4, "position": bar * 4 + position + 0.5 / 2 - 0.125}
-            self.notes_generated.append(pm)
-            self.palm_mutes_generated += 1
+        if (current_note == riff_root_note and not self.type2_riff) or (self.type2_riff and random.random() > 0.6):
+            self.palm_mute_root_notes(bar, position)
 
         return current_note
+
+    def palm_mute_root_notes(self, bar, position):
+        self.insert_palm_mute_note(bar, position, 14)
+        self.insert_palm_mute_note(bar, position, 12, 0.25)
+
+    def insert_palm_mute_note(self, bar, position, pitch, offset: float = 0.0):
+        pm = {"pitch": pitch, "duration": 0.5 / 4, "position": bar * 4 + position - 0.125 + offset}
+        self.notes_generated.append(pm)
+        self.palm_mutes_generated += 1
 
     def set_root_note(self, bar):  # choose current root note for pedal tone riffs
         return self.current_scale[self.progression[bar]]
